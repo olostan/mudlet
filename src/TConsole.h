@@ -147,7 +147,7 @@ public:
       void              print( const char * );
       void              printDebug( QColor &, QColor &, QString & );
       void              printSystemMessage( QString & msg );
-      void              printOnDisplay( std::string & );
+      void              printOnDisplay( QString & );
       void              printCommand( QString & );
       bool              hasSelection();
       void              moveCursorEnd();
