@@ -817,7 +817,7 @@ inline int TBuffer::lookupColor( QString & s, int pos )
 }
 
 
-void TBuffer::translateToPlainText( std::string & s )
+void TBuffer::translateToPlainText( QString & s )
 {
     speedAppend = 0;
     speedTP = 0;
@@ -838,7 +838,7 @@ void TBuffer::translateToPlainText( std::string & s )
         {
             return;
         }
-        char & ch = s[msPos];
+        QCharRef ch = s[msPos];
         if( ch == '\033' )
         {
             gotESC = true;
@@ -1383,7 +1383,7 @@ void TBuffer::translateToPlainText( std::string & s )
                 {
                     if( ! mParsingVar )
                     {
-                        mOpenMainQuote = ch;
+                        mOpenMainQuote = ch.toAscii();
                         mParsingVar = true;
                     }
                     else
@@ -1403,7 +1403,7 @@ void TBuffer::translateToPlainText( std::string & s )
                     openT++;
                     if( currentToken.size() > 0 )
                     {
-                        currentToken += ch;
+                        currentToken += ch.toAscii();
                     }
                     mAssemblingToken = true;
                     msPos++;
@@ -1711,7 +1711,7 @@ void TBuffer::translateToPlainText( std::string & s )
                 }
                 else
                 {
-                    currentToken += ch;
+                    currentToken += ch.toAscii();
                     msPos++;
                     continue;
                 }
@@ -1726,25 +1726,25 @@ void TBuffer::translateToPlainText( std::string & s )
             {
                 if( ( msPos+4 < msLength ) && ( mSkip.size() == 0 ) )
                 {
-                    if( s.substr( msPos, 4 ) == "&gt;" )
+                    if( s.mid( msPos, 4 ) == "&gt;" )
                     {
                         msPos += 3;
                         ch = '>';
                         mIgnoreTag = false;
                     }
-                    else if(  s.substr( msPos, 4 ) == "&lt;" )
+                    else if(  s.mid( msPos, 4 ) == "&lt;" )
                     {
                         msPos += 3;
                         ch = '<';
                         mIgnoreTag = false;
                     }
-                    else if( s.substr( msPos, 5 ) == "&amp;" )
+                    else if( s.mid( msPos, 5 ) == "&amp;" )
                     {
                         mIgnoreTag = false;
                         msPos += 4;
                         ch = '&';
                     }
-                    else if( s.substr( msPos, 6 ) == "&quot;" )
+                    else if( s.mid( msPos, 6 ) == "&quot;" )
                     {
                         msPos += 5;
                         mIgnoreTag = false;
@@ -1780,7 +1780,7 @@ void TBuffer::translateToPlainText( std::string & s )
                 else
                 {
                     mIgnoreTag = true;
-                    mSkip += ch;
+                    mSkip += ch.toAscii();
                     // sanity check
                     if( mSkip.size() > 7 )
                     {
@@ -1796,7 +1796,7 @@ void TBuffer::translateToPlainText( std::string & s )
 
         if( mMXP_SEND_NO_REF_MODE )
         {
-            mAssembleRef += ch;
+            mAssembleRef += ch.toAscii();
         }
 
         COMMIT_LINE: if( ( ch == '\n' ) || ( ch == '\xff') || ( ch == '\r' ) )

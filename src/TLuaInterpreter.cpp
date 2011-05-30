@@ -856,7 +856,8 @@ int TLuaInterpreter::feedTriggers( lua_State * L )
     }
 
     Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
-    pHost->mpConsole->printOnDisplay( luaWindowName );
+    QString s(luaWindowName.c_str());
+    pHost->mpConsole->printOnDisplay( s );
     return 0;
 }
 

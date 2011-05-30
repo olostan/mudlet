@@ -932,7 +932,7 @@ void TConsole::loadRawFile( std::string n )
     mpHost->mTelnet.loadReplay( fileName );
 }
 
-void TConsole::printOnDisplay( std::string & incomingSocketData )
+void TConsole::printOnDisplay( QString & incomingSocketData )
 {
     //buffer.messen();
     QString prompt ="";//FIXME
