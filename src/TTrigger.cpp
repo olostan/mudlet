@@ -163,7 +163,7 @@ bool TTrigger::setRegexCodeList( QStringList regexList, QList<int> propertyList 
 
             pcre * re;
             re = pcre_compile( pattern,
-                               0,
+                               PCRE_UTF8,
                                &error,
                                &erroffset,
                                0 );

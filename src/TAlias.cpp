@@ -275,7 +275,7 @@ void TAlias::setRegexCode( QString code )
 
     pcre * re;
     re = pcre_compile( pattern,
-                       0,
+                       PCRE_UTF8,
                        &error,
                        &erroffset,
                        NULL);
