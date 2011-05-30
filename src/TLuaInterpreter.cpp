@@ -636,7 +636,7 @@ int TLuaInterpreter::getLines( lua_State * L )
     for( int i=0; i<strList.size(); i++ )
     {
         lua_pushnumber( L, i+1 );
-        lua_pushstring( L, strList[i].toLatin1().data() );
+        lua_pushstring( L, strList[i].toUtf8().data() );
         lua_settable(L, -3);
     }
     return 1;
@@ -675,7 +675,7 @@ int TLuaInterpreter::getBufferTable( lua_State * L )
     for( int i=0; i<strList.size(); i++ )
     {
         lua_pushnumber( L, i+1 );
-        lua_pushstring( L, strList[i].toLatin1().data() );
+        lua_pushstring( L, strList[i].toUtf8().data() );
         lua_settable(L, -3);
     } */
     return 0;
@@ -723,7 +723,7 @@ int TLuaInterpreter::getCurrentLine( lua_State * L )
 
     Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
     QString line = pHost->mpConsole->getCurrentLine( luaSendText );
-    lua_pushstring( L, line.toLatin1().data() );
+    lua_pushstring( L, line.toUtf8().data() );
     return 1;
 }
 
@@ -1253,7 +1253,7 @@ int TLuaInterpreter::getBufferLine( lua_State * L )
     /*Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
     QString line = pHost->getBufferLine( luaLine );
     if( mudlet::debugMode ) qDebug()<<"TLuaInterpreter::getBufferLine() line="<<line;
-    lua_pushstring( L, line.toLatin1().data() );*/
+    lua_pushstring( L, line.toUtf8().data() );*/
     return 0;
 }
 
@@ -2493,7 +2493,7 @@ int TLuaInterpreter::showUserWindow( lua_State *L )
         luaSendText = lua_tostring( L, 1 );
     }
     Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
-    QString text(luaSendText.c_str());
+    QString text = QString::fromUtf8(luaSendText.c_str());
     lua_pushboolean( L, pHost->mpConsole->showWindow( text ));
     return 1;
 }
@@ -2632,7 +2632,7 @@ int TLuaInterpreter::getRoomName( lua_State *L )
     Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
     if( pHost->mpMap->rooms.contains( id ) )
     {
-        lua_pushstring(L, pHost->mpMap->rooms[id]->name.toLatin1().data() );
+        lua_pushstring(L, pHost->mpMap->rooms[id]->name.toUtf8().data() );
     }
 
     return 1;
@@ -2938,7 +2938,7 @@ int TLuaInterpreter::searchRoom( lua_State *L )
     {
         if( pHost->mpMap->rooms.contains( room_id ) )
         {
-            lua_pushstring( L, pHost->mpMap->rooms[room_id]->name.toLatin1().data() );
+            lua_pushstring( L, pHost->mpMap->rooms[room_id]->name.toUtf8().data() );
             return 1;
         }
         else
@@ -2959,7 +2959,7 @@ int TLuaInterpreter::searchRoom( lua_State *L )
             {
                 QString name = pHost->mpMap->rooms[i]->name;
                 int roomID = pHost->mpMap->rooms[i]->id;
-                lua_pushstring( L, name.toLatin1().data() );
+                lua_pushstring( L, name.toUtf8().data() );
                 lua_pushnumber( L, roomID );
                 lua_settable(L, -3);
             }
@@ -2978,7 +2978,7 @@ int TLuaInterpreter::getAreaTable( lua_State *L )
         it.next();
         int roomID = it.key();
         QString name = it.value();
-        lua_pushstring( L, name.toLatin1().data() );
+        lua_pushstring( L, name.toUtf8().data() );
         lua_pushnumber( L, roomID );
         lua_settable(L, -3);
     }
@@ -3199,7 +3199,7 @@ int TLuaInterpreter::playSoundFile( lua_State * L )
     }
     else
         sound.replace('\\', "/");
-    Phonon::MediaObject *music = Phonon::createPlayer(Phonon::MusicCategory, Phonon::MediaSource(sound.toLatin1().data()));
+    Phonon::MediaObject *music = Phonon::createPlayer(Phonon::MusicCategory, Phonon::MediaSource(sound.toUtf8().data()));
     music->play();
     return 0;
 }
@@ -3258,7 +3258,7 @@ int TLuaInterpreter::getMudletHomeDir( lua_State * L )
     QString name = pHost->getName();
     home.append( name );
     QString erg = QDir::toNativeSeparators( home );
-    lua_pushstring( L, erg.toLatin1().data() );
+    lua_pushstring( L, erg.toUtf8().data() );
     return 1;
 }
 
@@ -4621,14 +4621,14 @@ int TLuaInterpreter::invokeFileDialog( lua_State * L )
     {
         QString fileName = QFileDialog::getExistingDirectory(0, QString( luaTitle.c_str()),
                                                         QDir::currentPath() );
-        lua_pushstring( L, fileName.toLatin1().data() );
+        lua_pushstring( L, fileName.toUtf8().data() );
         return 1;
     }
     else
     {
         QString fileName = QFileDialog::getOpenFileName(0, QString( luaTitle.c_str()),
                                                         QDir::currentPath() );
-        lua_pushstring( L, fileName.toLatin1().data() );
+        lua_pushstring( L, fileName.toUtf8().data() );
         return 1;
     }
 }
@@ -4668,7 +4668,7 @@ int TLuaInterpreter::getTimestamp( lua_State * L )
     {
         if( luaLine > 0 && luaLine < pHost->mpConsole->buffer.timeBuffer.size() )
         {
-            lua_pushstring( L, pHost->mpConsole->buffer.timeBuffer.at(luaLine).toLatin1().data() );
+            lua_pushstring( L, pHost->mpConsole->buffer.timeBuffer.at(luaLine).toUtf8().data() );
         }
         else
         {
@@ -4683,7 +4683,7 @@ int TLuaInterpreter::getTimestamp( lua_State * L )
         TConsole * pC = dockWindowConsoleMap[_name];
         if( luaLine > 0 && luaLine < pC->buffer.timeBuffer.size() )
         {
-            lua_pushstring( L, pC->buffer.timeBuffer.at(luaLine).toLatin1().data() );
+            lua_pushstring( L, pC->buffer.timeBuffer.at(luaLine).toUtf8().data() );
         }
         else
         {
@@ -4930,7 +4930,7 @@ int TLuaInterpreter::getRoomAreaName( lua_State *L )
     {
         if( pHost->mpMap->areaNamesMap.contains( id ) )
         {
-            lua_pushstring( L, pHost->mpMap->areaNamesMap[id].toLatin1().data() );
+            lua_pushstring( L, pHost->mpMap->areaNamesMap[id].toUtf8().data() );
         }
         else
             lua_pushnumber( L, -1 );
@@ -5162,7 +5162,7 @@ int TLuaInterpreter::addRoom( lua_State * L )
     int id;
     if( ! lua_isnumber( L, 1 ) )
     {
-        lua_pushstring( L, "getRoomArea: wrong argument type" );
+        lua_pushstring( L, "addRoom: wrong argument type" );
         lua_error( L );
         return 1;
     }
@@ -5303,7 +5303,7 @@ int TLuaInterpreter::getSpecialExits( lua_State * L )
             int id_to = it.key();
             QString dir = it.value();
             lua_pushnumber( L, id_to );
-            lua_pushstring( L, dir.toLatin1().data() );
+            lua_pushstring( L, dir.toUtf8().data() );
             lua_settable(L, -3);
         }
         return 1;
@@ -5334,7 +5334,7 @@ int TLuaInterpreter::getSpecialExitsSwap( lua_State * L )
             it.next();
             int id_to = it.key();
             QString dir = it.value();
-            lua_pushstring( L, dir.toLatin1().data() );
+            lua_pushstring( L, dir.toUtf8().data() );
             lua_pushnumber( L, id_to );
             lua_settable(L, -3);
         }
@@ -5396,7 +5396,7 @@ int TLuaInterpreter::getRoomUserData( lua_State * L )
         QString _key = key.c_str();
         if( pHost->mpMap->rooms[roomID]->userData.contains( _key ) )
         {
-            lua_pushstring( L, pHost->mpMap->rooms[roomID]->userData[_key].toLatin1().data() );
+            lua_pushstring( L, pHost->mpMap->rooms[roomID]->userData[_key].toUtf8().data() );
             return 1;
         }
         else
@@ -6458,7 +6458,7 @@ int TLuaInterpreter::getTime( lua_State * L )
     if( return_string )
     {
         tm = time.toString( fmt );
-        lua_pushstring( L, tm.toLatin1().data() );
+        lua_pushstring( L, tm.toUtf8().data() );
     }
     else
     {
@@ -6605,7 +6605,8 @@ int TLuaInterpreter::Send( lua_State * L )
         }
     }
     Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
-    pHost->send( QString( luaSendText.c_str() ), wantPrint, false );
+    QString text = QString::fromUtf8( luaSendText.c_str() );
+    pHost->send( text , wantPrint, false );
     return 0;
 }
 
@@ -6662,7 +6663,8 @@ int TLuaInterpreter::sendRaw( lua_State * L )
         }
     }
     Host * pHost = TLuaInterpreter::luaInterpreterMap[L];
-    pHost->send( QString(luaSendText.c_str()), wantPrint, true );
+//    pHost->send( QString(luaSendText.c_str()), wantPrint, true );
+    pHost->send( QString::fromUtf8(luaSendText.c_str()), wantPrint, true );
     return 0;
 }
 
@@ -6702,7 +6704,7 @@ bool TLuaInterpreter::compileAndExecuteScript( QString & code )
         return false;
     }
 
-    int error = luaL_dostring( L, code.toLatin1().data() );
+    int error = luaL_dostring( L, code.toUtf8().data() );
     QString n;
     if( error != 0 )
     {
@@ -6744,12 +6746,12 @@ bool TLuaInterpreter::compileScript( QString & code )
     for( int i=0; i<matches.size(); i++ )
     {
         lua_pushnumber( L, i+1 ); // Lua indexes start with 1
-        lua_pushstring( L, matches[i].toLatin1().data() );
+        lua_pushstring( L, matches[i].toUtf8().data() );
         lua_settable( L, -3 );
     }
     lua_setglobal( L, "matches" );*/
 
-    int error = luaL_dostring( L, code.toLatin1().data() );
+    int error = luaL_dostring( L, code.toUtf8().data() );
     QString n;
     if( error != 0 )
     {
@@ -6780,7 +6782,7 @@ bool TLuaInterpreter::compile( QString & code )
         return false;
     }
 
-    int error = luaL_dostring( L, code.toLatin1().data() );
+    int error = luaL_dostring( L, code.toUtf8().data() );
     QString n;
     if( error != 0 )
     {
@@ -6811,7 +6813,7 @@ bool TLuaInterpreter::compile( QString & code, QString & errorMsg )
         return false;
     }
 
-    int error = luaL_dostring( L, code.toLatin1().data() );
+    int error = luaL_dostring( L, code.toUtf8().data() );
     QString n;
     if( error != 0 )
     {
@@ -6909,8 +6911,8 @@ void TLuaInterpreter::setAtcpTable( QString & var, QString & arg )
 {
     lua_State * L = pGlobalLua;
     lua_getglobal( L, "atcp" ); //defined in LuaGlobal.lua
-    lua_pushstring( L, var.toLatin1().data() );
-    lua_pushstring( L, arg.toLatin1().data() );
+    lua_pushstring( L, var.toUtf8().data() );
+    lua_pushstring( L, arg.toUtf8().data() );
     lua_rawset( L, -3 );
     lua_pop( L, 1 );
 
@@ -6940,19 +6942,19 @@ void TLuaInterpreter::setGMCPTable(QString & key, QString & string_data)
     int i = 0;
     for( ; i<tokenList.size()-1; i++ )
     {
-        lua_getfield(L, -1, tokenList[i].toLatin1().data());
+        lua_getfield(L, -1, tokenList[i].toUtf8().data());
         if( !lua_istable(L, -1) )
         {
             lua_pop(L, 1);
-            lua_pushstring(L, tokenList[i].toLatin1().data());
+            lua_pushstring(L, tokenList[i].toUtf8().data());
             lua_newtable(L);
             lua_rawset(L, -3);
-            lua_getfield(L, -1, tokenList[i].toLatin1().data());
+            lua_getfield(L, -1, tokenList[i].toUtf8().data());
         }
         lua_remove(L, -2);
     }
     bool __needMerge = false;
-    lua_getfield(L, -1, tokenList[i].toLatin1().data());
+    lua_getfield(L, -1, tokenList[i].toUtf8().data());
     if( lua_istable(L, -1) )
     {
         // only merge tables (instead of replacing them) if the key has been registered as a need to merge key by the user default is Char.Status only
@@ -6963,7 +6965,7 @@ void TLuaInterpreter::setGMCPTable(QString & key, QString & string_data)
     }
     lua_pop( L, 1 );
     if( ! __needMerge )
-        lua_pushstring(L, tokenList[i].toLatin1().data());
+        lua_pushstring(L, tokenList[i].toUtf8().data());
     else
         lua_pushstring(L, "__needMerge");
 
@@ -6975,7 +6977,7 @@ void TLuaInterpreter::setGMCPTable(QString & key, QString & string_data)
         qDebug()<<"CRITICAL ERROR: json_to_value not defined";
         return;
     }
-    lua_pushlstring(L, string_data.toLatin1().data(), string_data.size());
+    lua_pushlstring(L, string_data.toUtf8().data(), string_data.size());
     int error = lua_pcall(L, 1, 1, 0);
     if( error == 0 )
     {
@@ -6995,10 +6997,10 @@ void TLuaInterpreter::setGMCPTable(QString & key, QString & string_data)
             i = 0;
             for( ; i<tokenList.size()-1; i++ )
             {
-                lua_getfield(L, -1, tokenList[i].toLatin1().data());
+                lua_getfield(L, -1, tokenList[i].toUtf8().data());
                 lua_remove(L, -2);
             }
-            lua_pushstring( L, tokenList[i].toLatin1().data());
+            lua_pushstring( L, tokenList[i].toUtf8().data());
             lua_pcall(L, 2, 0, 0);
         }
     }
@@ -7142,8 +7144,8 @@ bool TLuaInterpreter::call( QString & function, QString & mName )
         lua_setglobal( L, "matches" );
     }
 
-    lua_getglobal( L, function.toLatin1().data() );
-    lua_getfield( L, LUA_GLOBALSINDEX, function.toLatin1().data() );
+    lua_getglobal( L, function.toUtf8().data() );
+    lua_getfield( L, LUA_GLOBALSINDEX, function.toUtf8().data() );
     int error = lua_pcall( L, 0, LUA_MULTRET, 0 );
     if( error != 0 )
     {
@@ -7272,8 +7274,8 @@ bool TLuaInterpreter::callMulti( QString & function, QString & mName )
         lua_setglobal( L, "multimatches" );
     }
 
-    lua_getglobal( L, function.toLatin1().data() );
-    lua_getfield( L, LUA_GLOBALSINDEX, function.toLatin1().data() );
+    lua_getglobal( L, function.toUtf8().data() );
+    lua_getfield( L, LUA_GLOBALSINDEX, function.toUtf8().data() );
     int error = lua_pcall( L, 0, LUA_MULTRET, 0 );
     if( error != 0 )
     {
@@ -7302,8 +7304,8 @@ bool TLuaInterpreter::callMulti( QString & function, QString & mName )
 bool TLuaInterpreter::callEventHandler( QString & function, TEvent * pE )
 {
     lua_State * L = pGlobalLua;
-    lua_getglobal( L, function.toLatin1().data() );
-    lua_getfield( L, LUA_GLOBALSINDEX, function.toLatin1().data() );
+    lua_getglobal( L, function.toUtf8().data() );
+    lua_getfield( L, LUA_GLOBALSINDEX, function.toUtf8().data() );
     for( int i=0; i<pE->mArgumentList.size(); i++ )
     {
         if( pE->mArgumentTypeList[i] == ARGUMENT_TYPE_NUMBER )
@@ -7312,7 +7314,7 @@ bool TLuaInterpreter::callEventHandler( QString & function, TEvent * pE )
         }
         else
         {
-            lua_pushstring( L, pE->mArgumentList[i].toLatin1().data() );
+            lua_pushstring( L, pE->mArgumentList[i].toUtf8().data() );
         }
     }
     int error = lua_pcall( L, pE->mArgumentList.size(), LUA_MULTRET, 0 );
@@ -7345,10 +7347,10 @@ void TLuaInterpreter::set_lua_table( QString & tableName, QStringList & variable
     for( int i=0; i<variableList.size(); i++ )
     {
         lua_pushnumber( L, i+1 ); // Lua indexes start with 1
-        lua_pushstring( L, variableList[i].toLatin1().data() );
+        lua_pushstring( L, variableList[i].toUtf8().data() );
         lua_settable( L, -3 );
     }
-    lua_setglobal( L, tableName.toLatin1().data() );
+    lua_setglobal( L, tableName.toUtf8().data() );
     lua_pop( pGlobalLua, lua_gettop( pGlobalLua ) );
 }
 
@@ -7361,9 +7363,9 @@ void TLuaInterpreter::set_lua_string( const QString & varName, QString & varValu
         return;
     }
 
-    //lua_pushstring( L, varName.toLatin1().data() );
-    lua_pushstring( L, varValue.toLatin1().data() );
-    lua_setglobal( L, varName.toLatin1().data() );
+    //lua_pushstring( L, varName.toUtf8().data() );
+    lua_pushstring( L, varValue.toUtf8().data() );
+    lua_setglobal( L, varName.toUtf8().data() );
     //lua_setfield( L, LUA_GLOBALSINDEX, s )
     lua_pop( pGlobalLua, lua_gettop( pGlobalLua ) );
 
@@ -7379,8 +7381,8 @@ QString TLuaInterpreter::get_lua_string( QString & stringName )
         return QString( "LUA CRITICAL ERROR" );
     }
 
-    lua_getglobal( L, stringName.toLatin1().data() );
-    lua_getfield( L, LUA_GLOBALSINDEX, stringName.toLatin1().data() );
+    lua_getglobal( L, stringName.toUtf8().data() );
+    lua_getfield( L, LUA_GLOBALSINDEX, stringName.toUtf8().data() );
     return QString( lua_tostring( L, 1 ) );
 }
 
@@ -7748,7 +7750,7 @@ void TLuaInterpreter::initLuaGlobals()
     }
 
 //    QString path = QDir::homePath()+"/.config/mudlet/mudlet-lua/lua/LuaGlobal.lua";
-//    error = luaL_dofile( pGlobalLua, path.toLatin1().data() );
+//    error = luaL_dofile( pGlobalLua, path.toUtf8().data() );
 //    if( error != 0 )
 //    {
 //        string e = "no error message available from Lua";
@@ -7765,7 +7767,7 @@ void TLuaInterpreter::initLuaGlobals()
 //    }
 
     /*path = QDir::homePath()+"/.config/mudlet/db.lua";
-    error = luaL_dofile( pGlobalLua, path.toLatin1().data() );
+    error = luaL_dofile( pGlobalLua, path.toUtf8().data() );
     if( error != 0 )
     {
         string e = "no error message available from Lua";
@@ -7799,7 +7801,7 @@ void TLuaInterpreter::loadGlobal()
     //QString path = QDir::homePath()+"/.config/mudlet/mudlet-lua/lua/LuaGlobal.lua";
     QString path = "mudlet-lua/lua/LuaGlobal.lua";
 
-    int error = luaL_dofile( pGlobalLua, path.toLatin1().data() );
+    int error = luaL_dofile( pGlobalLua, path.toUtf8().data() );
     if( error != 0 )
     {
         string e = "no error message available from Lua";
