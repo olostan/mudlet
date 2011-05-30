@@ -34,7 +34,7 @@ class T2DMap;
 #include "TArea.h"
 #include "glwidget.h"
 #include <stdlib.h>
-#include "TAstar.h"
+#include "TAStar.h"
 //#include "dlgMapper.h"
 
 class dlgMapper;

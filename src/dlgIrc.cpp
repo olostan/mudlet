@@ -18,11 +18,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#ifndef OPT_NOIRC
 #include <QDebug>
 #include <QDesktopServices>
 #include <QScrollBar>
 //#define IRC_SHARED
-#include "dlgIRC.h"
+#include "dlgIrc.h"
 //#include "irc/include/ircsession.h"
 
 //#include <ircsession.h>
@@ -199,3 +200,4 @@ void dlgIRC::anchorClicked(const QUrl& link)
     QDesktopServices::openUrl(link);
 }
 
+#endif

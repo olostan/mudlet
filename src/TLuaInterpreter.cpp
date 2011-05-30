@@ -3175,7 +3175,7 @@ int TLuaInterpreter::setAppStyleSheet( lua_State *L )
     qApp->setStyleSheet( luaWindowName.c_str() );
 }
 
-#include <Phonon>
+#include <phonon/phonon>
 
 int TLuaInterpreter::playSoundFile( lua_State * L )
 {

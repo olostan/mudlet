@@ -492,12 +492,13 @@ static int js_parser(lua_State *L) {
     *handle = yajl_alloc(&js_parser_callbacks, NULL, (void*)L);
     luaL_getmetatable(L, "yajl.parser.meta");
     lua_setmetatable(L, -2);
-
+#ifdef yajl_allow_comments
     lua_getfield(L, 1, "allow_comments");
     if ( ! lua_isnil(L, -1) ) {
         yajl_config(*handle, yajl_allow_comments, lua_toboolean(L, -1));
     }
     lua_pop(L, 1);
+#endif    
 
     lua_getfield(L, 1, "check_utf8");
     if ( ! lua_isnil(L, -1) ) {

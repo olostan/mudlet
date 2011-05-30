@@ -42,9 +42,9 @@
 #include "TTextEdit.h"
 #include "dlgNotepad.h"
 
-//#ifdef Q_CC_GNU
-    #include "dlgIRC.h"
-//#endif
+#ifndef OPT_NOIRC
+    #include "dlgIrc.h"
+#endif
 
 //#define NDEBUG
 #include <assert.h>
@@ -1575,7 +1575,7 @@ void mudlet::slot_notes()
 
 void mudlet::slot_irc()
 {
-//#ifdef Q_CC_GNU
+#ifndef OPT_NOIRC
     if( ! mpIRC )
     {
         mpIRC = new dlgIRC();
@@ -1583,7 +1583,7 @@ void mudlet::slot_irc()
     }
     mpIRC->raise();
     mpIRC->show();
-//#endif
+#endif
 }
 
 void mudlet::slot_reconnect()

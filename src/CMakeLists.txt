@@ -78,8 +78,7 @@ TConsole.cpp
     TBuffer.cpp
     T2DMap.cpp
     dlgRoomExits.cpp
-	lua_yajl.c
-	dlgIrc.cpp
+	lua_yajl1.c
 )
 
 SET(mudlet_UIS 
@@ -181,31 +180,23 @@ mudlet.h
     Tree.h
     T2DMap.h
     dlgRoomExits.h
-	dlgIrc.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)
-#FIND_PACKAGE(Lua51 REQUIRED)
-#FIND_PACKAGE(ZLIB REQUIRED)
-#FIND_PACKAGE(PCRE REQUIRED)
+FIND_PACKAGE(Lua51 REQUIRED)
+FIND_PACKAGE(ZLIB REQUIRED)
+FIND_PACKAGE(PCRE REQUIRED)
+FIND_PACKAGE(OpenGL REQUIRED)
+FIND_PACKAGE(GLUT REQUIRED)
 
+ADD_DEFINITIONS(${QT_DEFINITIONS})
 
 INCLUDE(../MudletCPack.cmake) # Use CPack
 INCLUDE(${QT_USE_FILE})
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} ${mudlet_BINARY_DIR} 
-"C:\\mudlet_package_MSVC\\pcre-8.0-lib\\include" 
-"C:\\mudlet_package_MSVC\\Lua_src\\include" 
-"C:\\mudlet_package_MSVC\\zlib-1.2.5"
-"c:\\mudlet_package_MSVC\\boost_1_45_0"
-"c:\\mudlet_package_MSVC\\pcre-8.0-lib\\include"
-"C:\\mudlet_package_MSVC\\hunspell-1.3.1\\src"
-"C:\\mudlet_package_MSVC\\lloyd-yajl-f4b2b1a\\yajl-2.0.1\\include"
-"C:\\mudlet_package_MSVC\\libircclient-qt-0.5.0\\include"
+    ${LUA_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR} ${PCRE_INCLUDE_DIR}
 )
 
-IF(CMAKE_COMPILER_IS_GNUCXX)
-  ADD_DEFINITIONS(${CMAKE_CXX_FLAGS} "-Wno-deprecated  -DUNICODE  -D_UNICODE")
-ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 QT4_AUTOMOC(${mudlet_SRCS})
 QT4_WRAP_UI(mudlet_UIS_H ${mudlet_UIS})
@@ -214,24 +205,13 @@ QT4_ADD_RESOURCES(mudlet_RCC_SRCS ${mudlet_RCCS})
 
 add_executable(mudlet WIN32 ${mudlet_SRCS} ${mudlet_UIS_H} ${mudlet_MOC_SRCS} ${mudlet_RCC_SRCS})
 
-TARGET_LINK_LIBRARIES( 
-mudlet 
-c:\\Qt_VC\\4.7.3\\lib\\qtmain.lib
-C:\\Qt_VC\\4.7.3\\lib\\QtOpenGL4.lib
-C:\\Qt_VC\\4.7.3\\lib\\QtCore4.lib
-C:\\Qt_VC\\4.7.3\\lib\\QtGui4.lib
-C:\\Qt_VC\\4.7.3\\lib\\QtNetwork4.lib
-C:\\Qt_VC\\4.7.3\\lib\\QtUiTools.lib
-C:\\Qt_VC\\4.7.3\\lib\\phonon4.lib
-c:\\mudlet_package_MSVC\\zlib_125\\zlibwapi.lib
-C:\\mudlet_package_MSVC\\Lua_src\\lib\\lua51.lib
-C:\\mudlet_package_MSVC\\pcre-8.12\\Release\\pcre.lib
-C:\\mudlet_package_MSVC\\hunspell-1.3.1\\src\\win_api\\Release_dll\\libhunspell\\libhunspell.lib
-"C:\\Program Files (x86)\\Microsoft SDKs\\Windows\\v7.0A\\Lib\\OpenGL32.Lib"
-"C:\\Program Files (x86)\\Microsoft SDKs\\Windows\\v7.0A\\Lib\\GlU32.Lib"
-"C:\\Users\\heiko\\Desktop\\lloyd-yajl-f4b2b1a\\yajl-2.0.1\\lib\\Release\\yajl.lib"
-"C:\\mudlet_package_MSVC\\libircclient-qt-0.5.0\\lib\\ircclient-qt.lib"
-)
+IF(CMAKE_COMPILER_IS_GNUCXX)
+  ADD_DEFINITIONS(${CMAKE_CXX_FLAGS} "-Wno-deprecated  -DUNICODE  -D_UNICODE -DOPT_NOIRC")
+  TARGET_LINK_LIBRARIES(mudlet libyajl.so libhunspell.so libQtOpenGL.so libQtUiTools.so)
+ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+
+
+TARGET_LINK_LIBRARIES(mudlet ${QT_LIBRARIES} ${LUA_LIBRARIES} ${ZLIB_LIBRARIES} ${PCRE_LIBRARIES} ${GLUT_LIBRARY} ${OPENGL_LIBRARY})
 
 install( PROGRAMS mudlet DESTINATION "/usr/local/bin" )
 install( FILES LuaGlobal.lua mudlet_documentation.html fonts/ttf-bitstream-vera-1.10/COPYRIGHT.TXT fonts/ttf-bitstream-vera-1.10/local.conf fonts/ttf-bitstream-vera-1.10/README.TXT fonts/ttf-bitstream-vera-1.10/RELEASENOTES.TXT fonts/ttf-bitstream-vera-1.10/VeraBd.ttf fonts/ttf-bitstream-vera-1.10/VeraBI.ttf fonts/ttf-bitstream-vera-1.10/VeraIt.ttf fonts/ttf-bitstream-vera-1.10/VeraMoBd.ttf fonts/ttf-bitstream-vera-1.10/VeraMoBI.ttf fonts/ttf-bitstream-vera-1.10/VeraMoIt.ttf fonts/ttf-bitstream-vera-1.10/VeraMono.ttf fonts/ttf-bitstream-vera-1.10/VeraSeBd.ttf fonts/ttf-bitstream-vera-1.10/VeraSe.ttf fonts/ttf-bitstream-vera-1.10/Vera.ttf DESTINATION "/usr/local/share/mudlet" )
