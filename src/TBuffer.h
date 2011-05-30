@@ -121,7 +121,7 @@ public:
     void clear();
     void resetFontSpecs();
     QPoint getEndPos();
-    void translateToPlainText( std::string & s );
+    void translateToPlainText( QString & s );
     void append( QString & chunk, int sub_start, int sub_end, int, int, int, int, int, int, bool bold, bool italics, bool underline, int linkID=0 );
     void appendLine( QString & chunk, int sub_start, int sub_end, int, int, int, int, int, int, bool bold, bool italics, bool underline, int linkID=0 );
     int lookupColor( QString & s, int pos );
