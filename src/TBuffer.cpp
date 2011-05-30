@@ -1799,7 +1799,7 @@ void TBuffer::translateToPlainText( QString & s )
             mAssembleRef += ch.toAscii();
         }
 
-        COMMIT_LINE: if( ( ch == '\n' ) || ( ch == '\xff') || ( ch == '\r' ) )
+        COMMIT_LINE: if( ( ch == '\n' ) || ( ch == '\xff') || ( ch == '\r' ) ||(ch.unicode()==0xFFFD) )
         {
             // MUD Zeilen werden immer am Zeilenanfang geschrieben
             if( lineBuffer.back().size() > 0 )
@@ -1820,7 +1820,7 @@ void TBuffer::translateToPlainText( QString & s )
                 buffer.push_back( mMudBuffer );
                 dirty << true;
                 timeBuffer << (QTime::currentTime()).toString("hh:mm:ss.zzz") + "   ";
-                if( ch == '\xff' )
+                if( (ch == '\xff') || (ch.unicode()==0xFFFD) )
                 {
                     promptBuffer.append( true );
                 }
@@ -1847,7 +1847,7 @@ void TBuffer::translateToPlainText( QString & s )
                 buffer.back() = mMudBuffer;
                 dirty.back() = true;
                 timeBuffer.back() = QTime::currentTime().toString("hh:mm:ss.zzz") + "   ";
-                if( ch == '\xff' )
+                if( ch == '\xff' || ch.unicode() == 0xFFFD)
                 {
                     promptBuffer.back() = true ;
                 }
