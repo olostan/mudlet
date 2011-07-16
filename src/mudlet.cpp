@@ -43,7 +43,7 @@
 #include "dlgNotepad.h"
 
 #ifndef OPT_NOIRC
-    #include "dlgIrc.h"
+    #include "dlgIRC.h"
 #endif
 
 //#define NDEBUG
@@ -87,16 +87,8 @@ mudlet::mudlet()
 , mShowToolbar( true )
 , mWindowMinimized( false )
 , mReplaySpeed( 1 )
-, mIsGoingDown( false )
-, mpCurrentActiveHost( 0 )
-, actionReplaySpeedDown( 0 )
-, actionReplaySpeedUp( 0 )
 , mpIRC( 0 )
-, mpMusicBox1(Phonon::createPlayer(Phonon::MusicCategory) )
-, mpMusicBox2(Phonon::createPlayer(Phonon::MusicCategory) )
-, mpMusicBox3(Phonon::createPlayer(Phonon::MusicCategory) )
-, mpMusicBox4(Phonon::createPlayer(Phonon::MusicCategory) )
-#ifdef Q_OS_LINUX,
+#ifdef Q_OS_LINUX
     , version( "Mudlet 2.0" )
 #endif
 #ifdef Q_OS_MAC
@@ -105,6 +97,16 @@ mudlet::mudlet()
 #ifdef Q_OS_WIN
     , version( "Mudlet 2.0" )
 #endif
+, mpCurrentActiveHost( 0 )
+, mpMusicBox1(Phonon::createPlayer(Phonon::MusicCategory) )
+, mpMusicBox2(Phonon::createPlayer(Phonon::MusicCategory) )
+, mpMusicBox3(Phonon::createPlayer(Phonon::MusicCategory) )
+, mpMusicBox4(Phonon::createPlayer(Phonon::MusicCategory) )
+, mIsGoingDown( false )
+, actionReplaySpeedDown( 0 )
+, actionReplaySpeedUp( 0 )
+
+
 {
     setupUi(this);
     setUnifiedTitleAndToolBarOnMac( true );

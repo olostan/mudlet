@@ -7296,7 +7296,7 @@ int TLuaInterpreter::sendSocket( lua_State * L )
     return 0;
 }
 
-#include "dlgIrc.h"
+#include "dlgIRC.h"
 int TLuaInterpreter::sendIrc( lua_State * L )
 {
     string who;

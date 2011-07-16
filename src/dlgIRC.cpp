@@ -23,7 +23,7 @@
 #include <QDesktopServices>
 #include <QScrollBar>
 //#define IRC_SHARED
-#include "dlgIrc.h"
+#include "dlgIRC.h"
 #include <QDir>
 //#include "irc/include/ircsession.h"
 

@@ -133,6 +133,19 @@ TBuffer::TBuffer( Host * pH )
 , mWrapAt            ( 99999999 )
 , mWrapIndent        ( 0 )
 , mCursorY           ( 0 )
+, mMXP               ( false )
+, mAssemblingToken   ( false )
+, currentToken       ( "" )
+, openT              ( 0 )
+, closeT             ( 0 )
+, mMXP_LINK_MODE     ( false )
+
+, mIgnoreTag         ( false )
+, mSkip              ( "" )
+, mParsingVar        ( false )
+, mMXP_SEND_NO_REF_MODE ( false )
+
+
 , gotESC             ( false )
 , gotHeader          ( false )
 , codeRet            ( 0 )
@@ -153,8 +166,11 @@ TBuffer::TBuffer( Host * pH )
 , mMagenta           ( pH->mMagenta )
 , mLightWhite        ( pH->mLightWhite )
 , mWhite             ( pH->mWhite )
+
+
 , mFgColor           ( pH->mFgColor )
 , mBgColor           ( pH->mBgColor )
+
 , mpHost             ( pH )
 , mCursorMoved       ( false )
 , mBold              ( false )
@@ -162,16 +178,7 @@ TBuffer::TBuffer( Host * pH )
 , mUnderline         ( false )
 , mFgColorCode       ( 0 )
 , mBgColorCode       ( 0 )
-, mMXP               ( false )
-, mAssemblingToken   ( false )
-, currentToken       ( "" )
-, openT              ( 0 )
-, closeT             ( 0 )
-, mMXP_LINK_MODE     ( false )
-, mIgnoreTag         ( false )
-, mSkip              ( "" )
-, mParsingVar        ( false )
-, mMXP_SEND_NO_REF_MODE ( false )
+
 {
     clear();
     newLines = 0;
@@ -1435,7 +1442,7 @@ void TBuffer::translateToPlainText( QString & s )
                 {
                     mAssemblingToken = false;
                     //qDebug()<<"identified TAG("<<currentToken.c_str()<<")";
-                    int _pfs = currentToken.find_first_of(' ');
+                    size_t _pfs = currentToken.find_first_of(' ');
                     QString _tn;
                     if( _pfs == std::string::npos )
                     {
@@ -1591,7 +1598,7 @@ void TBuffer::translateToPlainText( QString & s )
                     else if( mMXP_Elements.contains( _tn ) )
                     {
                         QString _tp;
-                        int _fs = currentToken.find_first_of(' ');
+                        size_t _fs = currentToken.find_first_of(' ');
                         if( _fs != std::string::npos )
                             _tp = currentToken.substr( _fs ).c_str();
                         else
