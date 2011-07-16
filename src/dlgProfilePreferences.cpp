@@ -1303,7 +1303,7 @@ void dlgProfilePreferences::downloadMap()
     mpHost->mpMap->mpMapper->downloadMap();
 }
 
-#include "dlgIRC.h"
+#include "dlgIrc.h"
 
 void dlgProfilePreferences::slot_save_and_exit()
 {

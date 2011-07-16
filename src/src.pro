@@ -18,7 +18,7 @@ unix:LIBS += -lpcre \
     $$LIBLUA \
     -lhunspell \
     -lyajl \
-    -lzzip
+    -lz
 
 win32:LIBS += -L"c:\mudlet2_package" \
     -llua51 \
