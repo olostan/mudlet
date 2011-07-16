@@ -50,6 +50,8 @@ public:
 
 
 public slots:
+        void slot_bubbles();
+        void slot_showGrid();
         void slot_toggleShowRoomIDs(int s);
         void slot_toggleStrongHighlight( int v );
         void show2dView();
@@ -58,6 +60,8 @@ public slots:
         void replyFinished( QNetworkReply * );
         void goRoom();
         void choseRoom( QListWidgetItem * );
+        void slot_roomSize(int d);
+        void slot_lineSize(int d);
 };
 
 #endif // DLGMAPPER_H

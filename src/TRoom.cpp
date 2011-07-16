@@ -26,6 +26,9 @@ TRoom::TRoom()
 , weight(1)
 , isLocked( false )
 , c( 0 )
+, highlight( false )
+, highlightColor( QColor( 255,150,0 ) )
+, rendered(false)
 {
 }
 
@@ -90,28 +93,32 @@ void TRoom::setExitLock(int exit, bool state )
 
 void TRoom::setSpecialExitLock(int to, QString cmd, bool doLock)
 {
-    if( other.contains( to ) )
+    QMapIterator<int, QString> it( other );
+    while(it.hasNext() )
     {
-        QMapIterator<int, QString> it( other );
-        while(it.hasNext() )
+        it.next();
+        if( it.key() != to ) continue;
+        if( it.value().size() < 1 ) continue;
+        if( it.value().mid(1) != cmd )
         {
-            it.next();
-            if( it.key() != to ) continue;
-            if( it.value().right(1) != cmd ) continue;
-            if( doLock && it.value().size() > 0 )
+            if( it.value() != cmd )
             {
-                QString _cmd = it.value();
-                _cmd.mid(0,1) = "1";
-                other.replace( it.key(), _cmd );
+                continue;
             }
-            else if( it.value().size() > 0 )
-            {
-                QString _cmd = it.value();
-                _cmd.mid(0,1) = "0";
-                other.replace( it.key(), _cmd );
-            }
-            return;
         }
+        if( doLock )
+        {
+            QString _cmd = it.value();
+            _cmd.replace( 0, 1, '1' );
+            other.replace( to, _cmd );
+        }
+        else
+        {
+            QString _cmd = it.value();
+            _cmd.replace( 0, 1, '0');
+            other.replace( to, _cmd );
+        }
+        return;
     }
 }
 
@@ -130,9 +137,8 @@ bool TRoom::hasSpecialExitLock(int to, QString cmd)
         {
             it.next();
             if( it.key() != to ) continue;
-            if( it.value().right(1) != cmd ) continue;
-            if( it.value().size() > 0 )
-                return it.value().mid(0,1) == "1";
+            if( it.value().size() < 2 ) continue;
+            return it.value().mid(0,1) == "1";
         }
         return false;
     }
@@ -148,20 +154,34 @@ void TRoom::addSpecialExit( int to, QString cmd )
     {
         it.next();
         if( it.key() != to ) continue;
-        if( it.value().right(1) != cmd ) continue;
         if( it.value().size() > 0 )
         {
-            QString _cmd = cmd;
-            _cmd.prepend("0");
-            other.replace( to, _cmd );
-            _cmd.mid(0,1) = "1";
+            QString _cmd;
+            if( cmd.startsWith('0') || cmd.startsWith('1') )
+            {
+                _cmd = cmd;
+            }
+            else
+            {
+                _cmd.prepend("0");
+                _cmd.append( cmd );
+            }
+
             other.replace( to, _cmd );
             return;
         }
     }
     // it doesnt exit -> add
-    QString _cmd = cmd;
-    cmd.prepend("0");
+    QString _cmd;
+    if( cmd.startsWith('0') || cmd.startsWith('1') )
+    {
+        _cmd = cmd;
+    }
+    else
+    {
+        _cmd.prepend("0");
+        _cmd.append( cmd );
+    }
     other.insertMulti( to, cmd );
 }
 

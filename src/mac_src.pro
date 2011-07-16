@@ -1,47 +1,34 @@
-
 CONFIG += release uitools
-
+CONFIG += app_bundle
 QMAKE_CXXFLAGS_RELEASE += -O3 -Wno-deprecated -Wno-unused-parameter
 QMAKE_CXXFLAGS_DEBUG += -O3 -Wno-deprecated -Wno-unused-parameter
+QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.4
+
 MOC_DIR = ./tmp
 OBJECTS_DIR = ./tmp
 QT += network opengl phonon
-DEPENDPATH += .
-INCLUDEPATH += .
-LIBLUA = -llua5.1
-!exists(/usr/lib/liblua5.1.a):LIBLUA = -llua
 
-# automatically link to LuaJIT if it exists
-exists(/usr/local/lib/libluajit-5.1.a):LIBLUA = -L/usr/local/lib -lluajit-5.1
 
-unix:LIBS += -lpcre \
-    $$LIBLUA \
-    -lhunspell \
-    -lyajl \
-    -lzzip
 
-win32:LIBS += -L"c:\mudlet2_package" \
-    -llua51 \
-    -lpcre \
-    -lhunspell \
-    -lyajl
+macx:INCLUDEPATH += /Users/heikokoehn/Downloads/lua5_1_4_MacOS106_lib/include \
+/Users/heikokoehn/Downloads/boost_1_46_1 \
+/usr/local/include/yajl/include
+
+macx:LIBS += \
+/Users/heikokoehn/lib/liblua.a \
+#/usr/local/lib/libluajit-5.1.a \
+/usr/local/lib/libzzip.a \
+-F../Frameworks \
+-L../Frameworks \
+-lpcre \
+-lhunspell \
+-lz \
+-lyajl
 
 unix:INCLUDEPATH += /usr/include/lua5.1
 
-win32:INCLUDEPATH += "c:\mudlet_package_MINGW\Lua_src\include" \
-    "c:\mudlet_package_MINGW\zlib-1.2.5" \
-    "c:\mudlet_package_MINGW\boost_1_45_0" \
-    "c:\mudlet_package_MINGW\pcre-8.0-lib\include" \
-    #"C:\mudlet_package_MSVC\lloyd-yajl-f4b2b1a\yajl-2.0.1\include" \
-    "c:\mudlet2_package\src\yajl1-src\src\include" \
-    "C:\mudlet_package_MINGW\hunspell-1.3.1\src"
-
-unix:isEmpty( INSTALL_PREFIX ):INSTALL_PREFIX = /usr/local
-unix: {
-    SHARE_DIR = /usr/local/share/mudlet
-    BIN_DIR = $$INSTALL_PREFIX/bin
-}
 INCLUDEPATH += irc/include
+
 SOURCES += TConsole.cpp \
     ctelnet.cpp \
     main.cpp \
@@ -106,7 +93,7 @@ SOURCES += TConsole.cpp \
     dlgMapper.cpp \
     TRoom.cpp \
     TMap.cpp \
-    lua_yajl1.c \
+    #lua_yajl.c \
     TBuffer.cpp \
     irc/src/ircbuffer.cpp \
     irc/src/irc.cpp \
@@ -114,7 +101,8 @@ SOURCES += TConsole.cpp \
     irc/src/ircutil.cpp \
     dlgIRC.cpp \
     T2DMap.cpp \
-    dlgRoomExits.cpp
+    dlgRoomExits.cpp \
+    luazip.c
 
 
 HEADERS += mudlet.h \
@@ -220,16 +208,15 @@ FORMS += ui/connection_profiles.ui \
     ui/room_exits.ui \
     ui/lacking_mapper_script.ui \
     ui/package_manager.ui \
-    ui/package_manager_unpack.ui \
-    ui/custom_lines.ui
+    ui/package_manager_unpack.ui
 
-#win32: {
-#    SOURCES += lua_yajl.c
-#}
+win32: {
+    SOURCES += lua_yajl.c
+}
 
-#unix: {
-#    SOURCES += lua_yajl1.c
-#}
+unix: {
+    SOURCES += lua_yajl1.c
+}
 
 TEMPLATE = app
 TARGET = mudlet

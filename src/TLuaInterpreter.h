@@ -115,6 +115,18 @@ public:
     TGatekeeperThread * mpGatekeeperThread;
     QNetworkAccessManager * mpFileDownloader;
 
+    static int lockExit( lua_State * );
+    static int lockSpecialExit( lua_State * );
+    static int hasExitLock( lua_State * );
+    static int hasSpecialExitLock( lua_State * );
+    static int getMapLabels( lua_State * );
+    static int highlightRoom( lua_State * );
+    static int unHighlightRoom( lua_State * );
+    static int createMapLabel( lua_State * );
+    static int deleteMapLabel( lua_State * );
+    static int getRooms( lua_State * );
+    static int isLockedRoom( lua_State * );
+    static int connectToServer( lua_State *L );
     static int sendIrc( lua_State * );
     static int showUnzipProgress( lua_State * );
     static int setAppStyleSheet( lua_State * );

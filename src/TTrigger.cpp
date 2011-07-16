@@ -213,26 +213,23 @@ bool TTrigger::setRegexCodeList( QStringList regexList, QList<int> propertyList 
             int _pos = regex.indexIn( regexList[i] );
             if( _pos == -1 )
             {
-                qDebug()<<"ERROR: cannot parse color trigger pattern="<<regexList[i];
                 mColorPatternList.push_back( 0 );
                 state = false;
                 continue;
             }
-            qDebug()<<"pattern="<<regexList[i];
             int ansiFg = regex.cap(1).toInt();
             int ansiBg = regex.cap(2).toInt();
 
             if( ! setupColorTrigger( ansiFg, ansiBg ) )
             {
-                qDebug()<<"ERROR: cannot setup color trigger pattern";
                 mColorPatternList.push_back( 0 );
                 state = false;
                 continue;
             }
-            else
-            {
-                qDebug()<<"[OK] color pattern initialized:"<<regexList[i];
-            }
+//            else
+//            {
+//                qDebug()<<"[OK] color pattern initialized:"<<regexList[i];
+//            }
         }
         else
         {
@@ -1447,9 +1444,7 @@ void TTrigger::execute()
 {
     if( mSoundTrigger )
     {
-        //QSound::play( mSoundFile );
-        Phonon::MediaObject * music = Phonon::createPlayer(Phonon::MusicCategory, Phonon::MediaSource( mSoundFile ));
-        music->play();
+        mudlet::self()->playSound( mSoundFile );
     }
     if( mCommand.size() > 0 )
     {
@@ -1522,7 +1517,6 @@ bool TTrigger::serialize( QDataStream & ofs )
     ofs << mScript;
     ofs << mRegexCodeList;
     ofs << mRegexCodePropertyList;
-    qDebug()<<"serializing:"<< mName;
     ofs << mID;
     ofs << mIsFolder;
     ofs << mTriggerType;
@@ -1561,7 +1555,7 @@ bool TTrigger::restore( QDataStream & ifs, bool initMode )
 
     mID = mpHost->getTriggerUnit()->getNewID();
 
-    if( initMode ) qDebug()<<"TTrigger::restore() mName="<<mName<<" mID="<<mID<<" children="<<children;
+    //if( initMode ) qDebug()<<"TTrigger::restore() mName="<<mName<<" mID="<<mID<<" children="<<children;
 
     bool ret = false;
 

@@ -283,6 +283,17 @@ public:
     QDialog *          mpUnzipDialog;
     QPushButton *      uninstallButton;
     QListWidget *      packageList;
+    double             mLineSize;
+    double             mRoomSize;
+    bool               mShowInfo;
+    bool               mBubbleMode;
+    int                mServerGUI_Package_version;
+    QString            mServerGUI_Package_name;
+    bool               mAcceptServerGUI;
+    QColor             mCommandLineFgColor;
+    QColor             mCommandLineBgColor;
+    bool               mMapperUseAntiAlias;
+    bool               mFORCE_MXP_NEGOTIATION_OFF;
 
 private:
     Host();

@@ -36,14 +36,34 @@ class T2DMap;
 #include <stdlib.h>
 #include "TAStar.h"
 //#include "dlgMapper.h"
+#include <QSizeF>
+#include <QColor>
+#include <QPixmap>
+#include <QVector3D>
 
 class dlgMapper;
+
+class TMapLabel
+{
+public:
+    QPointF pos;
+    QPointF pointer;
+    QSizeF size;
+    QString text;
+    QColor fgColor;
+    QColor bgColor;
+    QPixmap pix;
+};
 
 class TMap
 {
 public:
     TMap( Host *);
+    int createMapLabel(int area, QString text, float x, float y, QColor fg, QColor bg );
+    void deleteMapLabel( int area, int labelID );
     bool addRoom( int id=0 );
+    void auditRooms();
+    void setRoomArea( int id, int area );
     void deleteRoom( int id );
     void deleteArea( int id );
     int  createNewRoomID();
@@ -71,6 +91,8 @@ public:
     bool serialize( QDataStream & );
     bool restore();
     void initGraph();
+    void exportMapToDatabase();
+    void importMapFromDatabase();
     QMap<int, TRoom *> rooms;
     QMap<int, TArea *> areas;
     QMap<int, QString> areaNamesMap;
@@ -100,6 +122,8 @@ public:
     WeightMap weightmap;
     std::vector<location> locations;
     bool mMapGraphNeedsUpdate;
+    bool mNewMove;
+    QMap<qint32, QMap<qint32, TMapLabel> > mapLabels;
 
 
 };

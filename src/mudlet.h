@@ -36,6 +36,11 @@
 #include <QMdiArea>
 #include "TConsole.h"
 #include "ui_main_window.h"
+#ifdef Q_OS_LINUX
+    #include <phonon>
+#else
+    #include <Phonon>
+#endif
 
 class QAction;
 class QMenu;
@@ -132,7 +137,7 @@ public:
    //QString                       readProfileData( QString profile, QString item );
    void                          doAutoLogin( QString & );
    void                          deselect( Host * pHost, QString & name );
-
+   void                          playSound( QString s );
    QTime                         mReplayTime;
    int                           mReplaySpeed;
    QToolBar *                    mpMainToolBar;
@@ -142,6 +147,10 @@ public:
    Host *                        mpCurrentActiveHost;
    bool                          mAutolog;
    QString                       mIrcNick;
+   Phonon::MediaObject *         mpMusicBox1;
+   Phonon::MediaObject *         mpMusicBox2;
+   Phonon::MediaObject *         mpMusicBox3;
+   Phonon::MediaObject *         mpMusicBox4;
 
 
 

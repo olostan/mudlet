@@ -38,16 +38,14 @@ using namespace std;
 
 TConsole *  spDebugConsole = 0;
 
-QFile debugStreamFile("C:\\mudletDebugStream.txt");;
-QTextStream debugStream(&debugStreamFile);
-
+//#ifdef QT_DEBUG
+//    QFile debugStreamFile("C:\\mudletDebugStream.txt");;
+//    QTextStream debugStream(&debugStreamFile);
+//#endif
 
 void debugOutput(QtMsgType type, const char *msg)
 {
-
-    #ifdef QT_DEBUG
-        debugStream << msg << endl;
-    #endif
+    //debugStream << msg << endl;
     ;
 //    switch (type)
 //    {
@@ -82,16 +80,18 @@ extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
 
 int main(int argc, char *argv[])
 {
+//    #ifdef QT_DEBUG
+//        debugStreamFile.open(QFile::WriteOnly | QFile::Truncate);
+//    #endif
 
-    debugStreamFile.open(QFile::WriteOnly | QFile::Truncate);
-
+    //FIXME qInstallMsgHandler( debugOutput );
     spDebugConsole = 0;
-    qInstallMsgHandler( debugOutput );
 
+    QGL::setPreferredPaintEngine(QPaintEngine::Raster);//faster map drawing on ubuntu
     Q_INIT_RESOURCE(mudlet_alpha);
     QApplication app(argc, argv);
     app.setApplicationName("Mudlet");
-    QPixmap pixmap(":/Mudlet_splashscreen_main");
+    QPixmap pixmap(":/Mudlet_splashscreen_main.png");
     QSplashScreen splash(pixmap);
     splash.show();
 
@@ -270,6 +270,9 @@ int main(int argc, char *argv[])
     HostManager::self();
     FontManager fm;
     fm.addFonts();
+    QString home = QDir::homePath()+"/.config/mudlet";
+    QString homeLink = QDir::homePath()+"/mudlet-data";
+    QFile::link(home, homeLink);
     mudlet::self()->show();
     app.exec();
 }

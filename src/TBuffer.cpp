@@ -808,7 +808,7 @@ inline int TBuffer::lookupColor( QString & s, int pos )
         else
         {
             msPos++;
-            qDebug()<<"unrecognized sequence:<"<<s.mid(pos,msPos-pos)<<">";
+            //qDebug()<<"unrecognized sequence:<"<<s.mid(pos,msPos-pos)<<">";
             return 0; // unbekannte sequenz
         }
     }
@@ -930,7 +930,6 @@ void TBuffer::translateToPlainText( QString & s )
                                     }
                                     else
                                         mBold = false;
-
                                     switch(tag)
                                     {
                                     case 0:
@@ -1016,16 +1015,22 @@ void TBuffer::translateToPlainText( QString & s )
                                     int g = (tag-(r*36)) / 6;
                                     int b = (tag-(r*36))-(g*6);
                                     fgColorR = r*42;
+                                    fgColorLightR = r*42;
                                     fgColorG = g*42;
+                                    fgColorLightG = g*42;
                                     fgColorB = b*42;
+                                    fgColorLightB = b*42;
                                 }
                                 else
                                 {
                                     // black + 23 tone grayscale from dark to light gray
                                     tag -= 232;
                                     fgColorR = tag*10;
+                                    fgColorLightR = tag*10;
                                     fgColorG = tag*10;
+                                    fgColorLightG = tag*10;
                                     fgColorB = tag*10;
+                                    fgColorLightB = tag*10;
                                 }
                                 mHighColorModeForeground = false;
                                 mWaitingForHighColorCode = false;
@@ -1353,7 +1358,7 @@ void TBuffer::translateToPlainText( QString & s )
                             bgColorG = mBgColorG;
                             bgColorB = mBgColorB;
                             break;
-                        default: qDebug()<<"ERROR: stream decoder code error:"<<tag;
+                        default: ;//qDebug()<<"ERROR: stream decoder code error:"<<tag;
                         };
                     }
 
@@ -1418,7 +1423,7 @@ void TBuffer::translateToPlainText( QString & s )
                 // sanity check
                 if( closeT > openT )
                 {
-                    qDebug()<<"MXP ERROR: more closing tag than open tags open="<<openT<<" close="<<closeT<<" current token:("<<currentToken.c_str()<<")";
+                    //qDebug()<<"MXP ERROR: more closing tag than open tags open="<<openT<<" close="<<closeT<<" current token:("<<currentToken.c_str()<<")";
                     closeT = 0;
                     openT = 0;
                     mAssemblingToken = false;
@@ -1429,7 +1434,7 @@ void TBuffer::translateToPlainText( QString & s )
                 if( ( openT > 0 ) && ( closeT == openT ) )
                 {
                     mAssemblingToken = false;
-                    qDebug()<<"identified TAG("<<currentToken.c_str()<<")";
+                    //qDebug()<<"identified TAG("<<currentToken.c_str()<<")";
                     int _pfs = currentToken.find_first_of(' ');
                     QString _tn;
                     if( _pfs == std::string::npos )
@@ -1573,12 +1578,12 @@ void TBuffer::translateToPlainText( QString & s )
                                 QStringList _t_ref_list;
                                 _t_ref_list << _t_ref;
                                 mLinkStore[mLinkID] = _t_ref_list;
-                                qDebug()<<"MXP_SEND_NO_REF_MODE: tag closed cmd="<<_t_ref;
+                                //qDebug()<<"MXP_SEND_NO_REF_MODE: tag closed cmd="<<_t_ref;
                             }
                             else
                             {
                                 mLinkStore[mLinkID].replaceInStrings( "&text;", mAssembleRef.c_str() );
-                                qDebug()<<"MXP_SEND_NO_REF_MODE (replace &text): tag closed cmd="<<mLinkStore[mLinkID];
+                                //qDebug()<<"MXP_SEND_NO_REF_MODE (replace &text): tag closed cmd="<<mLinkStore[mLinkID];
                             }
                             mAssembleRef.clear();
                         }
@@ -1671,10 +1676,10 @@ void TBuffer::translateToPlainText( QString & s )
                         QStringList _tl = _t2.split('|');
                         for( int i=0; i<_tl.size(); i++ )
                         {
-                            qDebug()<<i<<"."<<_tl[i];
+                            //qDebug()<<i<<"."<<_tl[i];
                             _tl[i].replace( "|", "" );
                             _tl[i] = "send([[" + _tl[i] + "]])";
-                            qDebug()<<"->"<<_tl[i];
+                            //qDebug()<<"->"<<_tl[i];
                         }
 //                        if( mMXP_SEND_NO_REF_MODE )
 //                        {
@@ -1702,7 +1707,7 @@ void TBuffer::translateToPlainText( QString & s )
             {
                 if( ch == '\n' )
                 {
-                    qDebug()<<"MXP ERROR: more closing tag than open tags open="<<openT<<" close="<<closeT<<" current token:("<<currentToken.c_str()<<")";
+                    //qDebug()<<"MXP ERROR: more closing tag than open tags open="<<openT<<" close="<<closeT<<" current token:("<<currentToken.c_str()<<")";
                     closeT = 0;
                     openT = 0;
                     mAssemblingToken = false;
@@ -1875,7 +1880,6 @@ void TBuffer::translateToPlainText( QString & s )
             }
             continue;
         }
-
         mMudLine.append( ch );
         TChar c( ! mIsDefaultColor && mBold ? fgColorLightR : fgColorR,
                  ! mIsDefaultColor && mBold ? fgColorLightG : fgColorG,
@@ -1886,6 +1890,7 @@ void TBuffer::translateToPlainText( QString & s )
                  mIsDefaultColor ? mBold : false,
                  mItalics,
                  mUnderline );
+
         if( mMXP_LINK_MODE )
         {
             c.link = mLinkID;

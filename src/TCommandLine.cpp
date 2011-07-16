@@ -34,10 +34,10 @@ TCommandLine::TCommandLine( Host * pHost, TConsole * pConsole, QWidget * parent 
 
 {
     QString path;
-#ifdef Q_OS_WIN32
-    path = "./";
-#else
+#ifdef Q_OS_LINUX
     path = "/usr/share/hunspell/";
+#else
+    path = "./";
 #endif
 
     QString spell_aff = path + pHost->mSpellDic + ".aff";
@@ -50,10 +50,10 @@ TCommandLine::TCommandLine( Host * pHost, TConsole * pConsole, QWidget * parent 
     QFont font = mpHost->mDisplayFont;
     setFont(font);
 
-    mRegularPalette.setColor(QPalette::Text,QColor(0,0,192));
+    mRegularPalette.setColor(QPalette::Text, mpHost->mCommandLineFgColor );//QColor(0,0,192));
     mRegularPalette.setColor(QPalette::Highlight,QColor(0,0,192));
     mRegularPalette.setColor(QPalette::HighlightedText, QColor(255,255,255));
-    mRegularPalette.setColor(QPalette::Base,QColor(255,255,225));
+    mRegularPalette.setColor(QPalette::Base,mpHost->mCommandLineBgColor);//QColor(255,255,225));
 
     setPalette( mRegularPalette );
 
@@ -474,6 +474,19 @@ void TCommandLine::mousePressEvent( QMouseEvent * event )
 void TCommandLine::enterCommand( QKeyEvent * event )
 {
     QString _t = toPlainText();
+    mAutoCompletion = false;
+    mTabCompletion = false;
+    mTabCompletionCount = -1;
+    mAutoCompletionCount = -1;
+    mTabCompletionTyped = "";
+    if( mpHost->mAutoClearCommandLineAfterSend )
+        clear();
+    else
+    {
+        selectAll();
+    }
+    adjustHeight();
+
     QStringList _l = _t.split("\n");
     for( int i=0; i<_l.size(); i++ )
     {
@@ -490,18 +503,7 @@ void TCommandLine::enterCommand( QKeyEvent * event )
 
 
 
-    mAutoCompletion = false;
-    mTabCompletion = false;
-    mTabCompletionCount = -1;
-    mAutoCompletionCount = -1;
-    mTabCompletionTyped = "";
-    if( mpHost->mAutoClearCommandLineAfterSend )
-        clear();
-    else
-    {
-        selectAll();
-    }
-    adjustHeight();
+
 
 }
 
@@ -527,7 +529,7 @@ void TCommandLine::handleTabCompletion( bool direction )
         mTabCompletionCount = -1;
     }
     int amount = mpHost->mpConsole->buffer.size();
-    if( amount > 100 ) amount = 100;
+    if( amount > 500 ) amount = 500;
 
     QStringList bufferList = mpHost->mpConsole->buffer.getEndLines( amount );
     QString buffer = bufferList.join(" ");

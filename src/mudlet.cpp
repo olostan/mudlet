@@ -92,14 +92,21 @@ mudlet::mudlet()
 , actionReplaySpeedDown( 0 )
 , actionReplaySpeedUp( 0 )
 , mpIRC( 0 )
-#ifdef Q_CC_GNU
-    , version( "Mudlet 2.0-rc6-pre1 May 2011" )
-#else
-    , version( "Mudlet 2.0-rc6-MSVC10 May 2011" )
+, mpMusicBox1(Phonon::createPlayer(Phonon::MusicCategory) )
+, mpMusicBox2(Phonon::createPlayer(Phonon::MusicCategory) )
+, mpMusicBox3(Phonon::createPlayer(Phonon::MusicCategory) )
+, mpMusicBox4(Phonon::createPlayer(Phonon::MusicCategory) )
+#ifdef Q_OS_LINUX,
+    , version( "Mudlet 2.0" )
+#endif
+#ifdef Q_OS_MAC
+    , version( "Mudlet 2.0" )
+#endif
+#ifdef Q_OS_WIN
+    , version( "Mudlet 2.0" )
 #endif
 {
     setupUi(this);
-
     setUnifiedTitleAndToolBarOnMac( true );
     setContentsMargins(0,0,0,0);
     mudlet::debugMode = false;
@@ -220,12 +227,12 @@ mudlet::mudlet()
     QAction * actionPackageM = new QAction(QIcon(":/icons/utilities-file-archiver.png"), tr("Package Manager"), this);
     actionPackageM->setStatusTip(tr("Package Manager"));
     mpMainToolBar->addAction( actionPackageM );
-    QAction * menuActionPackageM = new QAction("Package Manager", this);
-    menuActionPackageM->setStatusTip(tr("Package Manager"));
-    connect(menuActionPackageM, SIGNAL(triggered()), this, SLOT(slot_package_manager()));
-    QMenu * _miscMenu = new QMenu("Misc", this);
-    _miscMenu->addAction(menuActionPackageM);
-    menuBar()->addMenu(_miscMenu);
+//    QAction * menuActionPackageM = new QAction("Package Manager", this);
+//    menuActionPackageM->setStatusTip(tr("Package Manager"));
+//    connect(menuActionPackageM, SIGNAL(triggered()), this, SLOT(slot_package_manager()));
+//    QMenu * _miscMenu = new QMenu("Misc", this);
+//    _miscMenu->addAction(menuActionPackageM);
+//    menuBar()->addMenu(_miscMenu);
 
 
 
@@ -954,6 +961,8 @@ bool mudlet::setConsoleBufferSize( Host * pHost, QString & name, int x1, int y1 
         return false;
 }
 
+
+
 bool mudlet::resetFormat( Host * pHost, QString & name )
 {
     QMap<QString, TConsole *> & dockWindowConsoleMap = mHostConsoleMap[pHost];
@@ -1336,7 +1345,7 @@ void mudlet::closeEvent(QCloseEvent *event)
             }
             if( pC->mpHost->mpNotePad )
             {
-                qDebug()<<"saving notepad";
+                //qDebug()<<"saving notepad";
                 pC->mpHost->mpNotePad->save();
                 pC->mpHost->mpNotePad->setAttribute( Qt::WA_DeleteOnClose );
                 pC->mpHost->mpNotePad->close();
@@ -1748,8 +1757,8 @@ void mudlet::doAutoLogin( QString & profile_name )
     QDir dir( folder );
     dir.setSorting(QDir::Time);
     QStringList entries = dir.entryList( QDir::Files, QDir::Time );
-    for( int i=0;i<entries.size(); i++ )
-        qDebug()<<i<<"#"<<entries[i];
+    //for( int i=0;i<entries.size(); i++ )
+    //    qDebug()<<i<<"#"<<entries[i];
     if( entries.size() > 0 )
     {
         QFile file(folder+"/"+entries[0]);
@@ -1980,4 +1989,27 @@ void mudlet::slot_replaySpeedDown()
     replaySpeedDisplay->show();
 }
 
-
+void mudlet::playSound( QString s )
+{
+    if( mpMusicBox1->remainingTime() == 0 )
+    {
+        mpMusicBox1->setCurrentSource( s );
+        mpMusicBox1->play();
+    }
+    else if( mpMusicBox2->remainingTime() == 0 )
+    {
+        mpMusicBox2->setCurrentSource( s );
+        mpMusicBox2->play();
+    }
+    else if( mpMusicBox3->remainingTime() == 0 )
+    {
+        mpMusicBox3->setCurrentSource( s );
+        mpMusicBox3->play();
+    }
+    else
+    {
+        mpMusicBox4->clear();
+        mpMusicBox4->setCurrentSource( s );
+        mpMusicBox4->play();
+    }
+}

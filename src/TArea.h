@@ -26,9 +26,14 @@
 #include <QList>
 #include <QMultiMap>
 #include <QPair>
+#include <QSizeF>
+#include <QColor>
+#include <QPixmap>
 #include <QVector3D>
 
 class TMap;
+
+
 
 class TArea
 {
@@ -61,6 +66,8 @@ public:
     QList<int> ebenen;
     TMap * mpMap;
     bool gridMode;
+    //QMap<int, TMapLabel> labelMap;
+
 };
 
 // - gezeichnet werden erstmal die areas

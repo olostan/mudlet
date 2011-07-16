@@ -40,6 +40,9 @@ dlgProfilePreferences::dlgProfilePreferences( QWidget * pF, Host * pH )
     // init generated dialog
     setupUi(this);
 
+    mFORCE_MXP_NEGOTIATION_OFF->setChecked(mpHost->mFORCE_MXP_NEGOTIATION_OFF);
+    mMapperUseAntiAlias->setChecked(mpHost->mMapperUseAntiAlias);
+    acceptServerGUI->setChecked(mpHost->mAcceptServerGUI);
     QString nick = tr("Mudlet%1").arg(QString::number(rand()%10000));
     QFile file( QDir::homePath()+"/.config/mudlet/irc_nick" );
     file.open( QIODevice::ReadOnly );
@@ -51,10 +54,12 @@ dlgProfilePreferences::dlgProfilePreferences( QWidget * pF, Host * pH )
     ircNick->setText( nick );
 
     dictList->setSelectionMode( QAbstractItemView::SingleSelection );
-#ifdef Q_OS_WIN32
-    QDir dir( "./" );
-#else
+    enableSpellCheck->setChecked( pH->mEnableSpellCheck );
+
+#ifdef Q_OS_LINUX
     QDir dir( "/usr/share/hunspell/" );
+#else
+    QDir dir( "./" );
 #endif
     QStringList entries = dir.entryList( QDir::Files, QDir::Time );
     QRegExp rex("\\.dic$");
@@ -70,11 +75,31 @@ dlgProfilePreferences::dlgProfilePreferences( QWidget * pF, Host * pH )
         }
     }
 
+    if( pH->mUrl == "achaea.com" || pH->mUrl == "aetolia.com" || pH->mUrl == "imperian.com" || pH->mUrl == "midkemiaonline.com" || pH->mUrl == "lusternia.com" )
+    {
+        downloadMapOptions->setVisible( true );
+        connect(buttonDownloadMap, SIGNAL(clicked()), this, SLOT(downloadMap()));
+    }
+
+
     connect(closeButton, SIGNAL(pressed()), this, SLOT(slot_save_and_exit()));
     connect(pushButton_black, SIGNAL(clicked()), this, SLOT(setColorBlack()));
     QPalette palette;
     QString styleSheet;
     QColor color;
+
+    color = mpHost->mCommandLineFgColor;
+    palette.setColor( QPalette::Button, color );
+    styleSheet = QString("QPushButton{background-color:")+color.name()+QString(";}");
+    pushButton_command_line_foreground_color->setStyleSheet( styleSheet );
+    connect(pushButton_command_line_foreground_color, SIGNAL(clicked()), this, SLOT(setCommandLineFgColor()));
+
+    color = mpHost->mCommandLineBgColor;
+    palette.setColor( QPalette::Button, color );
+    styleSheet = QString("QPushButton{background-color:")+color.name()+QString(";}");
+    pushButton_command_line_background_color->setStyleSheet( styleSheet );
+    connect(pushButton_command_line_background_color, SIGNAL(clicked()), this, SLOT(setCommandLineBgColor()));
+
     color = mpHost->mBlack;
     palette.setColor( QPalette::Button, color );
     styleSheet = QString("QPushButton{background-color:")+color.name()+QString(";}");
@@ -375,7 +400,7 @@ dlgProfilePreferences::dlgProfilePreferences( QWidget * pF, Host * pH )
         mFORCE_GA_OFF->setChecked( pHost->mFORCE_GA_OFF );
         mAlertOnNewData->setChecked( pHost->mAlertOnNewData );
         mMXPMode->setCurrentIndex( pHost->mMXPMode );
-        encoding->setCurrentIndex( pHost->mEncoding );
+        //encoding->setCurrentIndex( pHost->mEncoding );
         mFORCE_SAVE_ON_EXIT->setChecked( pHost->mFORCE_SAVE_ON_EXIT );
         mEnableGMCP->setChecked( pHost->mEnableGMCP );
     }
@@ -609,6 +634,45 @@ void dlgProfilePreferences::setCommandFgColor()
         pushButton_command_foreground_color->setStyleSheet( styleSheet );
     }
 }
+
+void dlgProfilePreferences::setCommandLineFgColor()
+{
+    Host * pHost = mpHost;
+    if( ! pHost ) return;
+    QColor color = QColorDialog::getColor( pHost->mCommandLineFgColor, this );
+    if ( color.isValid() )
+    {
+        QPalette palette;
+        palette.setColor( QPalette::Button, color );
+        pushButton_command_line_foreground_color->setPalette( palette );
+        pHost->mCommandLineFgColor = color;
+        if( mudlet::self()->mConsoleMap.contains( pHost ) ) mudlet::self()->mConsoleMap[pHost]->changeColors();
+        color = mpHost->mCommandLineFgColor;
+        palette.setColor( QPalette::Button, color );
+        QString styleSheet = QString("QPushButton{background-color:")+color.name()+QString(";}");
+        pushButton_command_line_foreground_color->setStyleSheet( styleSheet );
+    }
+}
+
+void dlgProfilePreferences::setCommandLineBgColor()
+{
+    Host * pHost = mpHost;
+    if( ! pHost ) return;
+    QColor color = QColorDialog::getColor( pHost->mCommandLineBgColor, this );
+    if ( color.isValid() )
+    {
+        QPalette palette;
+        palette.setColor( QPalette::Button, color );
+        pushButton_command_line_background_color->setPalette( palette );
+        pHost->mCommandLineBgColor = color;
+        if( mudlet::self()->mConsoleMap.contains( pHost ) ) mudlet::self()->mConsoleMap[pHost]->changeColors();
+        color = mpHost->mCommandLineBgColor;
+        palette.setColor( QPalette::Button, color );
+        QString styleSheet = QString("QPushButton{background-color:")+color.name()+QString(";}");
+        pushButton_command_line_background_color->setStyleSheet( styleSheet );
+    }
+}
+
 void dlgProfilePreferences::setCommandBgColor()
 {
     Host * pHost = mpHost;
@@ -1230,6 +1294,15 @@ void dlgProfilePreferences::setColorLightWhite2()
     }
 }
 
+#include "dlgMapper.h"
+
+void dlgProfilePreferences::downloadMap()
+{
+    if( ! mpHost->mpMap->mpMapper ) return;
+
+    mpHost->mpMap->mpMapper->downloadMap();
+}
+
 #include "dlgIRC.h"
 
 void dlgProfilePreferences::slot_save_and_exit()
@@ -1244,6 +1317,7 @@ void dlgProfilePreferences::slot_save_and_exit()
     pHost->mPrintCommand = show_sent_text_checkbox->isChecked();
     pHost->mAutoClearCommandLineAfterSend = auto_clear_input_line_checkbox->isChecked();
     pHost->mCommandSeparator = command_separator_lineedit->text();
+    pHost->mAcceptServerGUI = acceptServerGUI->isChecked();
     //pHost->mDisableAutoCompletion = disable_auto_completion_checkbox->isChecked();
     pHost->mUSE_IRE_DRIVER_BUGFIX = checkBox_USE_IRE_DRIVER_BUGFIX->isChecked();
     pHost->set_USE_IRE_DRIVER_BUGFIX( checkBox_USE_IRE_DRIVER_BUGFIX->isChecked() );
@@ -1254,14 +1328,18 @@ void dlgProfilePreferences::slot_save_and_exit()
     pHost->mFORCE_GA_OFF = mFORCE_GA_OFF->isChecked();
     pHost->mFORCE_SAVE_ON_EXIT = mFORCE_SAVE_ON_EXIT->isChecked();
     pHost->mEnableGMCP = mEnableGMCP->isChecked();
-
+    pHost->mMapperUseAntiAlias = mMapperUseAntiAlias->isChecked();
+    if( pHost->mpMap )
+        if( pHost->mpMap->mpMapper )
+            pHost->mpMap->mpMapper->mp2dMap->mMapperUseAntiAlias = mMapperUseAntiAlias->isChecked();
     pHost->mBorderTopHeight = topBorderHeight->value();
     pHost->mBorderBottomHeight = bottomBorderHeight->value();
     pHost->mBorderLeftWidth = leftBorderWidth->value();
     pHost->mBorderRightWidth = rightBorderWidth->value();
     pHost->commandLineMinimumHeight = commandLineMinimumHeight->value();
     pHost->mMXPMode = mMXPMode->currentIndex();
-    pHost->mEncoding = encoding->currentIndex();
+    //pHost->mEncoding = encoding->currentIndex();
+    pHost->mFORCE_MXP_NEGOTIATION_OFF = mFORCE_MXP_NEGOTIATION_OFF->isChecked();
     mudlet::self()->mMainIconSize = MainIconSize->value();
     mudlet::self()->mTEFolderIconSize = TEFolderIconSize->value();
     mudlet::self()->setIcoSize(MainIconSize->value());

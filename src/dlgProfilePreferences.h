@@ -63,6 +63,8 @@ public slots:
     void setCommandLineFont();
     void setFgColor();
     void setBgColor();
+    void setCommandLineBgColor();
+    void setCommandLineFgColor();
 
     void setCommandFgColor();
     void setCommandBgColor();
@@ -84,9 +86,8 @@ public slots:
     void setColorLightWhite2();
     void setFgColor2();
     void setBgColor2();
-
     void resetColors();
-
+    void downloadMap();
     void slot_save_and_exit();
 
 private:

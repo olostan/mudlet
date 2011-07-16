@@ -55,6 +55,7 @@ TTextEdit::TTextEdit( TConsole * pC, QWidget * pW, TBuffer * pB, Host * pH, bool
 , mpHost( pH )
 , mpScrollBar( 0 )
 {
+
     if( ! mIsDebugConsole )
     {
         mFontHeight = QFontMetrics( mpHost->mDisplayFont ).height();
@@ -65,6 +66,19 @@ TTextEdit::TTextEdit( TConsole * pC, QWidget * pW, TBuffer * pB, Host * pH, bool
 
             mScreenWidth = 100;//width()/mFontWidth;
         }
+
+        mpHost->mDisplayFont.setFixedPitch(true);
+#ifdef Q_OS_MAC
+        QPixmap pixmap = QPixmap( mScreenWidth*mFontWidth*2, mFontHeight*2 );
+        QPainter p(&pixmap);
+        p.setFont(mpHost->mDisplayFont);
+        const QRectF r = QRectF(0,0,mScreenWidth*mFontWidth*2,mFontHeight*2);
+        QRectF r2;
+        const QString t = "1234";
+        p.drawText(r,1,t,&r2);
+        mLetterSpacing = (qreal)((qreal)mFontWidth-(qreal)(r2.width()/t.size()));
+        mpHost->mDisplayFont.setLetterSpacing( QFont::AbsoluteSpacing, mLetterSpacing );
+#endif
         setFont( mpHost->mDisplayFont );
     }
     else
@@ -74,6 +88,19 @@ TTextEdit::TTextEdit( TConsole * pC, QWidget * pW, TBuffer * pB, Host * pH, bool
         mFontHeight = QFontMetrics( mDisplayFont ).height();
         mFontWidth = QFontMetrics( mDisplayFont ).width( QChar('W') );
         mScreenWidth = 100;
+        mDisplayFont.setFixedPitch(true);
+#ifdef Q_OS_MAC
+        QPixmap pixmap = QPixmap( mScreenWidth*mFontWidth*2, mFontHeight*2 );
+        QPainter p(&pixmap);
+        p.setFont(mDisplayFont);
+        const QRectF r = QRectF(0,0,mScreenWidth*mFontWidth*2,mFontHeight*2);
+        QRectF r2;
+        const QString t = "1234";
+        p.drawText(r,1,t,&r2);
+        mLetterSpacing = (qreal)((qreal)mFontWidth-(qreal)(r2.width()/t.size()));
+        mDisplayFont.setLetterSpacing( QFont::AbsoluteSpacing, mLetterSpacing );
+#endif
+
         setFont( mDisplayFont );
     }
     mScreenHeight = height() / mFontHeight;
@@ -163,6 +190,20 @@ void TTextEdit::initDefaultSettings()
     mFgColor = QColor(192,192,192);
     mBgColor = QColor(0,0,0);
     mDisplayFont = QFont("Bitstream Vera Sans Mono", 10, QFont::Courier);
+//    mDisplayFont.setWordSpacing( 0 );
+#ifdef Q_OS_MAC
+        QPixmap pixmap = QPixmap( mScreenWidth*mFontWidth*2, mFontHeight*2 );
+        QPainter p(&pixmap);
+        p.setFont(mDisplayFont);
+        const QRectF r = QRectF(0,0,mScreenWidth*mFontWidth*2,mFontHeight*2);
+        QRectF r2;
+        const QString t = "1234";
+        p.drawText(r,1,t,&r2);
+        mLetterSpacing = (qreal)((qreal)mFontWidth-(qreal)(r2.width()/t.size()));
+        mDisplayFont.setLetterSpacing( QFont::AbsoluteSpacing, mLetterSpacing );
+#endif
+    mDisplayFont.setLetterSpacing( QFont::AbsoluteSpacing, mLetterSpacing );
+    mDisplayFont.setFixedPitch(true);
     setFont( mDisplayFont );
     mCommandLineFont = QFont("Bitstream Vera Sans Mono", 10, QFont::Courier);
     mCommandSeperator = QString(";");
@@ -200,7 +241,27 @@ void TTextEdit::setScroll(int cursor, int lines)
 
 void TTextEdit::updateScreenView()
 {
-    if( isHidden() ) return; //NOTE: das ist wichtig, damit ich keine floating point exception bekomme, wenn mScreenHeight==0, was hier der Fall wäre
+    if( isHidden() )
+    {
+        mFontWidth = QFontMetrics( mDisplayFont ).width( QChar(' ') );
+        mFontDescent = QFontMetrics( mDisplayFont ).descent();
+        mFontAscent = QFontMetrics( mDisplayFont ).ascent();
+        mFontHeight = mFontAscent + mFontDescent;
+#ifdef Q_OS_MAC
+        QPixmap pixmap = QPixmap( 2000,600 );
+        QPainter p(&pixmap);
+        mDisplayFont.setLetterSpacing(QFont::AbsoluteSpacing, 0);
+        if( ! p.isActive() ) return;
+        p.setFont(mDisplayFont);
+        const QRectF r = QRectF(0,0,2000,600);
+        QRectF r2;
+        const QString t = "1234";
+        p.drawText(r,1,t,&r2);
+        mLetterSpacing = (qreal)((qreal)mFontWidth-(qreal)(r2.width()/t.size()));
+        mDisplayFont.setLetterSpacing( QFont::AbsoluteSpacing, mLetterSpacing );
+#endif
+        return; //NOTE: das ist wichtig, damit ich keine floating point exception bekomme, wenn mScreenHeight==0, was hier der Fall wäre
+    }
     if( ! mIsDebugConsole && ! mIsMiniConsole )
     {
         mFontWidth = QFontMetrics( mpHost->mDisplayFont ).width( QChar('W') );
@@ -209,6 +270,21 @@ void TTextEdit::updateScreenView()
         mFontHeight = mFontAscent + mFontDescent;
         mBgColor = mpHost->mBgColor;
         mFgColor = mpHost->mFgColor;
+#ifdef Q_OS_MAC
+        QPixmap pixmap = QPixmap( mScreenWidth*mFontWidth*2, mFontHeight*2 );
+        QPainter p(&pixmap);
+        mpHost->mDisplayFont.setLetterSpacing(QFont::AbsoluteSpacing, 0);
+        if( p.isActive() )
+        {
+            p.setFont(mpHost->mDisplayFont);
+            const QRectF r = QRectF(0,0,mScreenWidth*mFontWidth*2,mFontHeight*2);
+            QRectF r2;
+            const QString t = "1234";
+            p.drawText(r,1,t,&r2);
+            mLetterSpacing = (qreal)((qreal)mFontWidth-(qreal)(r2.width()/t.size()));
+            mpHost->mDisplayFont.setLetterSpacing( QFont::AbsoluteSpacing, mLetterSpacing );
+        }
+#endif
     }
     else
     {
@@ -216,6 +292,21 @@ void TTextEdit::updateScreenView()
         mFontDescent = QFontMetrics( mDisplayFont ).descent();
         mFontAscent = QFontMetrics( mDisplayFont ).ascent();
         mFontHeight = mFontAscent + mFontDescent;
+#ifdef Q_OS_MAC
+        QPixmap pixmap = QPixmap( mScreenWidth*mFontWidth*2, mFontHeight*2 );
+        QPainter p(&pixmap);
+        mDisplayFont.setLetterSpacing(QFont::AbsoluteSpacing, 0);
+        if( p.isActive() )
+        {
+            p.setFont(mDisplayFont);
+            const QRectF r = QRectF(0,0,mScreenWidth*mFontWidth*2,mFontHeight*2);
+            QRectF r2;
+            const QString t = "1234";
+            p.drawText(r,1,t,&r2);
+            mLetterSpacing = (qreal)((qreal)mFontWidth-(qreal)(r2.width()/t.size()));
+            mDisplayFont.setLetterSpacing( QFont::AbsoluteSpacing, mLetterSpacing );
+        }
+#endif
     }
     mScreenHeight = visibleRegion().boundingRect().height()/mFontHeight;
     int currentScreenWidth = visibleRegion().boundingRect().width() / mFontWidth;
@@ -361,7 +452,6 @@ inline void TTextEdit::drawBackground( QPainter & painter,
     painter.fillRect( bR.x(), bR.y(), bR.width(), bR.height(), bgColor );//QColor(rand()%255,rand()%255,rand()%255));//bgColor);
 }
 
-
 inline void TTextEdit::drawCharacters( QPainter & painter,
                                 const QRect & rect,
                                 QString & text,
@@ -377,13 +467,21 @@ inline void TTextEdit::drawCharacters( QPainter & painter,
         font.setBold( isBold );
         font.setUnderline( isUnderline );
         font.setItalic( isItalics );
+#ifdef Q_OS_MAC
+        font.setLetterSpacing(QFont::AbsoluteSpacing, mLetterSpacing);
+#endif
         painter.setFont( font );
     }
     if( painter.pen().color() != fgColor )
     {
         painter.setPen( fgColor );
     }
+#ifdef Q_OS_MAC
+    QPointF _p(rect.x(), rect.bottom()-mFontDescent);
+    painter.drawText( _p, text );
+#else
     painter.drawText( rect.x(), rect.bottom()-mFontDescent, text );
+#endif
 }
 
 
@@ -483,6 +581,7 @@ void TTextEdit::drawFrame( QPainter & p, const QRect & rect )
                     font.setBold( f.bold );
                     font.setUnderline( f.underline );
                     font.setItalic( f.italics );
+                    font.setLetterSpacing( QFont::AbsoluteSpacing, mLetterSpacing );
                     p.setFont( font );
                 }
                 if( ( p.pen().color() != fgColor ) || ( invers ) )
@@ -746,10 +845,13 @@ void TTextEdit::paintEvent( QPaintEvent* e )
 {
     const QRect & rect = e->rect();
 
+    if( mFontWidth <= 0 || mFontHeight <= 0 ) return;
+
     if( mScreenHeight <= 0 || mScreenWidth <= 0 )
     {
         mScreenHeight = height()/mFontHeight;//e->rect().height();
         mScreenWidth = 100;//e->rect().width();
+        if( mScreenHeight <= 0 || mScreenWidth <= 0 ) return;
     }
     QPainter painter( this );
     if( ! painter.isActive() ) return;
@@ -1043,53 +1145,53 @@ void TTextEdit::mouseMoveEvent( QMouseEvent * event )
 
 void TTextEdit::contextMenuEvent ( QContextMenuEvent * event )
 {
-    int x = event->x() / mFontWidth;
-    int y = ( event->y() / mFontHeight ) + imageTopLine();
-    if( y < static_cast<int>(mpBuffer->buffer.size()) )
-    {
-        if( x < static_cast<int>(mpBuffer->buffer[y].size()) )
-        {
-            if( mpBuffer->buffer[y][x].link > 0 )
-            {
-                QStringList command = mpBuffer->mLinkStore[mpBuffer->buffer[y][x].link];
-                QStringList hint = mpBuffer->mHintStore[mpBuffer->buffer[y][x].link];
-                if( command.size() > 1 )
-                {
-                    QMenu * popup = new QMenu( this );
-                    for( int i=0; i<command.size(); i++ )
-                    {
-                        QAction * pA;
-                        if( i < hint.size() )
-                        {
-                            pA = popup->addAction( hint[i] );
-                            mPopupCommands[hint[i]] = command[i];
-                        }
-                        else
-                        {
-                            pA = popup->addAction( command[i] );
-                            mPopupCommands[command[i]] = command[i];
-                        }
-                        connect( pA, SIGNAL(triggered()), this, SLOT(slot_popupMenu()));
-                    }
-                    popup->popup( event->globalPos() );
-                }
-                mIsCommandPopup = true;
-                return;
-            }
-        }
-    }
-    mIsCommandPopup = false;
+//    int x = event->x() / mFontWidth;
+//    int y = ( event->y() / mFontHeight ) + imageTopLine();
+//    if( y < static_cast<int>(mpBuffer->buffer.size()) )
+//    {
+//        if( x < static_cast<int>(mpBuffer->buffer[y].size()) )
+//        {
+//            if( mpBuffer->buffer[y][x].link > 0 )
+//            {
+//                QStringList command = mpBuffer->mLinkStore[mpBuffer->buffer[y][x].link];
+//                QStringList hint = mpBuffer->mHintStore[mpBuffer->buffer[y][x].link];
+//                if( command.size() > 1 )
+//                {
+//                    QMenu * popup = new QMenu( this );
+//                    for( int i=0; i<command.size(); i++ )
+//                    {
+//                        QAction * pA;
+//                        if( i < hint.size() )
+//                        {
+//                            pA = popup->addAction( hint[i] );
+//                            mPopupCommands[hint[i]] = command[i];
+//                        }
+//                        else
+//                        {
+//                            pA = popup->addAction( command[i] );
+//                            mPopupCommands[command[i]] = command[i];
+//                        }
+//                        connect( pA, SIGNAL(triggered()), this, SLOT(slot_popupMenu()));
+//                    }
+//                    popup->popup( event->globalPos() );
+//                }
+//                mIsCommandPopup = true;
+//                return;
+//            }
+//        }
+//    }
+//    mIsCommandPopup = false;
 
-    QAction * action = new QAction("copy", this );
-    action->setStatusTip(tr("copy selected text to clipboard"));
-    connect( action, SIGNAL(triggered()), this, SLOT(slot_copySelectionToClipboard()));
-    QAction * action2 = new QAction("copy as HTML", this );
-    action->setStatusTip(tr("copy selected text in HTML format with colors for usage in web browsers"));
-    connect( action2, SIGNAL(triggered()), this, SLOT(slot_copySelectionToClipboardHTML()));
-    QMenu * popup = new QMenu( this );
-    popup->addAction( action );
-    popup->addAction( action2 );
-    popup->popup( mapToGlobal( event->pos() ), action );
+//    QAction * action = new QAction("copy", this );
+//    action->setStatusTip(tr("copy selected text to clipboard"));
+//    connect( action, SIGNAL(triggered()), this, SLOT(slot_copySelectionToClipboard()));
+//    QAction * action2 = new QAction("copy as HTML", this );
+//    action->setStatusTip(tr("copy selected text in HTML format with colors for usage in web browsers"));
+//    connect( action2, SIGNAL(triggered()), this, SLOT(slot_copySelectionToClipboardHTML()));
+//    QMenu * popup = new QMenu( this );
+//    popup->addAction( action );
+//    popup->addAction( action2 );
+//    popup->popup( mapToGlobal( event->pos() ), action );
     event->accept();
     return;
 }

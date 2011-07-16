@@ -95,7 +95,8 @@ Host::Host( int port, QString hostname, QString login, QString pass, int id )
 , mUSE_UNIX_EOL( false )
 , mWrapAt( 100 )
 , mWrapIndentCount( 0 )
-
+, mCommandLineBgColor( QColor(  0,  0,  0) )
+, mCommandLineFgColor( QColor(128,128,128) )
 , mBlack             ( QColor(  0,  0,  0) )
 , mLightBlack        ( QColor(128,128,128) )
 , mRed               ( QColor(128,  0,  0) )
@@ -116,7 +117,7 @@ Host::Host( int port, QString hostname, QString login, QString pass, int id )
 , mBgColor           ( QColor(  0,  0,  0) )
 , mCommandBgColor    ( QColor(  0,  0,  0) )
 , mCommandFgColor    ( QColor(113,113,  0) )
-, mBlack_2             ( QColor(  0,  0,  0, 255) )
+, mBlack_2             ( QColor(  36,  36,  36, 255) )
 , mLightBlack_2        ( QColor(128,128,128, 255) )
 , mRed_2               ( QColor(128,  0,  0, 255) )
 , mLightRed_2          ( QColor(255,  0,  0, 255) )
@@ -138,6 +139,12 @@ Host::Host( int port, QString hostname, QString login, QString pass, int id )
 , mLogStatus           ( false )
 , mEnableSpellCheck    ( true )
 , mpUnzipDialog        ( 0 )
+, mRoomSize            ( 0.5 )
+, mLineSize            ( 5.0 )
+, mServerGUI_Package_version( -1 )
+, mServerGUI_Package_name( "nothing" )
+, mAcceptServerGUI     ( true )
+, mFORCE_MXP_NEGOTIATION_OFF( false )
 {
    // mLogStatus = mudlet::self()->mAutolog;
     QString directoryLogFile = QDir::homePath()+"/.config/mudlet/profiles/";
@@ -214,6 +221,8 @@ Host::Host()
 , mUSE_UNIX_EOL( false )
 , mWrapAt( 100 )
 , mWrapIndentCount( 0 )
+, mCommandLineBgColor( QColor(  0,  0,  0) )
+, mCommandLineFgColor( QColor(128,128,128) )
 , mBlack             ( QColor(  0,  0,  0) )
 , mLightBlack        ( QColor(128,128,128) )
 , mRed               ( QColor(128,  0,  0) )
@@ -234,7 +243,7 @@ Host::Host()
 , mBgColor           ( QColor(  0,  0,  0) )
 , mCommandBgColor    ( QColor(  0,  0,  0) )
 , mCommandFgColor    ( QColor(113,113,  0) )
-, mBlack_2             ( QColor(  0,  0,  0, 255) )
+, mBlack_2             ( QColor(  36,  36,  36, 255) )
 , mLightBlack_2        ( QColor(128,128,128, 255) )
 , mRed_2               ( QColor(128,  0,  0, 255) )
 , mLightRed_2          ( QColor(255,  0,  0, 255) )
@@ -256,6 +265,13 @@ Host::Host()
 , mLogStatus           ( false )
 , mEnableSpellCheck    ( true )
 , mpUnzipDialog        ( 0 )
+, mRoomSize            ( 0.5 )
+, mLineSize            ( 5.0 )
+, mShowInfo            ( true )
+, mServerGUI_Package_version( -1 )
+, mServerGUI_Package_name( "nothing" )
+, mAcceptServerGUI     ( true )
+, mFORCE_MXP_NEGOTIATION_OFF( false )
 {
 
     QString directoryLogFile = QDir::homePath()+"/.config/mudlet/profiles/";
@@ -592,14 +608,11 @@ void Host::raiseEvent( TEvent * pE )
             scriptList.value( i )->callEventHandler( pE );
         }
     }
-    qDebug()<<"host::raiseEvent() event="<<pE->mArgumentList[0];
     if( mAnonymousEventHandlerFunctions.contains( pE->mArgumentList[0] ) )
     {
         QStringList funList = mAnonymousEventHandlerFunctions[pE->mArgumentList[0]];
-        qDebug()<<"funList to call="<<funList;
         for( int i=0; i<funList.size(); i++ )
         {
-            qDebug()<<"-->calling:"<<funList[i];
             mLuaInterpreter.callEventHandler( funList[i], pE );
         }
     }
@@ -735,7 +748,6 @@ void Host::showUnpackingProgress( QString  txt )
     QStringList l;
     l << txt;
     packageList->addItems( l );
-    qDebug()<<txt;
     packageList->scrollToBottom();
     packageList->update();
     QApplication::sendPostedEvents();
@@ -837,7 +849,6 @@ bool Host::installPackage( QString fileName )
         setName( profileName );
         setLogin( login );
         setPass( pass );
-        return true;
     }
     if( mpEditorDialog )
     {

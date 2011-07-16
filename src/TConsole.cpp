@@ -99,7 +99,14 @@ TConsole::TConsole( Host * pH, bool isDebugConsole, QWidget * parent )
 , networkLatency( new QLineEdit )
 , mLastBufferLogLine( 0 )
 , mUserAgreedToCloseConsole( false )
+, mpBufferSearchBox( new QLineEdit )
+, mpBufferSearchUp( new QToolButton )
+, mpBufferSearchDown( new QToolButton )
+, mCurrentSearchResult( 0 )
+, mSearchQuery("")
 {
+    //mDisplayFont.setWordSpacing( 0 );
+//    mDisplayFont.setLetterSpacing( QFont::AbsoluteSpacing, 0 );
     QShortcut * ps = new QShortcut(this);
     ps->setKey(Qt::CTRL + Qt::Key_W);
     ps->setContext(Qt::WidgetShortcut);
@@ -360,7 +367,7 @@ TConsole::TConsole( Host * pH, bool isDebugConsole, QWidget * parent )
     layoutButtonLayer->setMargin(0);
     layoutButtonLayer->setSpacing(0);
 
-    QWidget * buttonLayerSpacer = new QWidget;
+    QWidget * buttonLayerSpacer = new QWidget(buttonLayer);
     buttonLayerSpacer->setSizePolicy( sizePolicy4 );
     layoutButtonMainLayer->addWidget( buttonLayerSpacer );
     layoutButtonMainLayer->addWidget( buttonLayer );
@@ -408,7 +415,7 @@ TConsole::TConsole( Host * pH, bool isDebugConsole, QWidget * parent )
     networkLatency->setContentsMargins(0,0,0,0);
     QPalette basePalette;
     basePalette.setColor( QPalette::Text, QColor(0,0,0) );
-    basePalette.setColor( QPalette::Base, QColor(200, 255, 200) );
+    basePalette.setColor( QPalette::Base, QColor(255, 255, 255) );
     networkLatency->setPalette( basePalette );
     networkLatency->setAlignment( Qt::AlignHCenter | Qt::AlignVCenter );
 
@@ -448,13 +455,58 @@ TConsole::TConsole( Host * pH, bool isDebugConsole, QWidget * parent )
     emergencyStop->setToolTip("Emergency Stop. Stop All Timers and Triggers");
     connect( emergencyStop, SIGNAL(clicked(bool)), this, SLOT(slot_stop_all_triggers( bool )));
 
+    mpBufferSearchBox->setMinimumSize(QSize(100,30));
+    mpBufferSearchBox->setMaximumSize(QSize(150,30));
+    mpBufferSearchBox->setSizePolicy( sizePolicy5 );
+    mpBufferSearchBox->setFont(mpHost->mCommandLineFont);
+    mpBufferSearchBox->setFocusPolicy( Qt::ClickFocus );
+#if QT_VERSION >= 0x040700
+    mpBufferSearchBox->setPlaceholderText("Search ...");
+#endif
+    QPalette __pal;
+    __pal.setColor(QPalette::Text, mpHost->mCommandLineFgColor );//QColor(0,0,192));
+    __pal.setColor(QPalette::Highlight,QColor(0,0,192));
+    __pal.setColor(QPalette::HighlightedText, QColor(255,255,255));
+    __pal.setColor(QPalette::Base,mpHost->mCommandLineBgColor);//QColor(255,255,225));
+    __pal.setColor(QPalette::Window, mpHost->mCommandLineBgColor);
+    mpBufferSearchBox->setPalette( __pal );
+    mpBufferSearchBox->setToolTip("Search buffer");
+    connect( mpBufferSearchBox, SIGNAL(returnPressed()), this, SLOT(slot_searchBufferUp()));
+
+
+
+
+    mpBufferSearchUp->setMinimumSize(QSize(30,30));
+    mpBufferSearchUp->setMaximumSize(QSize(30,30));
+    mpBufferSearchUp->setSizePolicy( sizePolicy5 );
+    mpBufferSearchUp->setFocusPolicy( Qt::NoFocus );
+    mpBufferSearchUp->setToolTip("next result");
+    mpBufferSearchUp->setFocusPolicy( Qt::NoFocus );
+    QIcon icon34(":/icons/export.png");
+    mpBufferSearchUp->setIcon( icon34 );
+    connect( mpBufferSearchUp, SIGNAL(clicked()), this, SLOT(slot_searchBufferUp()));
+
+
+    mpBufferSearchDown->setMinimumSize(QSize(30,30));
+    mpBufferSearchDown->setMaximumSize(QSize(30,30));
+    mpBufferSearchDown->setSizePolicy( sizePolicy5 );
+    mpBufferSearchDown->setFocusPolicy( Qt::NoFocus );
+    mpBufferSearchDown->setToolTip("next result");
+    mpBufferSearchDown->setFocusPolicy( Qt::NoFocus );
+    QIcon icon35(":/icons/import.png");
+    mpBufferSearchDown->setIcon( icon35 );
+    connect( mpBufferSearchDown, SIGNAL(clicked()), this, SLOT(slot_searchBufferDown()));
+
     layoutLayer2->addWidget( mpCommandLine );
     layoutLayer2->addWidget( buttonMainLayer );
-    layoutButtonLayer->addWidget( timeStampButton, 0, 0 );
-    layoutButtonLayer->addWidget( replayButton, 0, 1 );
-    layoutButtonLayer->addWidget( logButton, 0, 2 );
-    layoutButtonLayer->addWidget( emergencyStop, 0, 3 );
-    layoutButtonLayer->addWidget( networkLatency, 0, 4, 0, 10 );
+    layoutButtonLayer->addWidget( mpBufferSearchBox,0, 0, 0, 4 );
+    layoutButtonLayer->addWidget( mpBufferSearchUp, 0, 5 );
+    layoutButtonLayer->addWidget( mpBufferSearchDown, 0, 6 );
+    layoutButtonLayer->addWidget( timeStampButton, 0, 7 );
+    layoutButtonLayer->addWidget( replayButton, 0, 8 );
+    layoutButtonLayer->addWidget( logButton, 0, 9 );
+    layoutButtonLayer->addWidget( emergencyStop, 0, 10 );
+    layoutButtonLayer->addWidget( networkLatency, 0, 11 );
     layoutLayer2->setContentsMargins(0,0,0,0);
     layout->addWidget( layer );
     networkLatency->setFrame( false );
@@ -498,7 +550,6 @@ TConsole::TConsole( Host * pH, bool isDebugConsole, QWidget * parent )
     mpBaseVFrame->layout()->setSpacing(0);
     mpBaseHFrame->layout()->setMargin(0);
     mpBaseHFrame->layout()->setSpacing(0);
-    changeColors();
 
 
     setAttribute( Qt::WA_OpaquePaintEvent );//was disabled
@@ -506,11 +557,30 @@ TConsole::TConsole( Host * pH, bool isDebugConsole, QWidget * parent )
     buttonLayerSpacer->setMinimumHeight(0);
     buttonLayerSpacer->setMinimumWidth(100);
     buttonLayer->setMaximumHeight(31);
-    buttonLayer->setMaximumWidth(31);
-    buttonLayer->setMinimumWidth(240);
-    buttonLayer->setMaximumWidth(240);
-    buttonMainLayer->setMinimumWidth(240);
-    buttonMainLayer->setMaximumWidth(240);
+    //buttonLayer->setMaximumWidth(31);
+    buttonLayer->setMinimumWidth(400);
+    buttonLayer->setMaximumWidth(400);
+    buttonMainLayer->setMinimumWidth(400);
+    buttonMainLayer->setMaximumWidth(400);
+    setFocusPolicy(Qt::ClickFocus);
+    setFocusProxy(mpCommandLine);
+    console->setFocusPolicy(Qt::ClickFocus);
+    console->setFocusProxy(mpCommandLine);
+    console2->setFocusPolicy(Qt::ClickFocus);
+    console2->setFocusProxy(mpCommandLine);
+
+    buttonLayerSpacer->setAutoFillBackground( true );
+    buttonLayerSpacer->setPalette( __pal );
+    buttonMainLayer->setAutoFillBackground( true );
+    buttonMainLayer->setPalette( __pal );
+
+    buttonLayer->setAutoFillBackground( true );
+    buttonLayer->setPalette( __pal );
+
+    layerCommandLine->setPalette( __pal );
+
+    changeColors();
+
 }
 
 void TConsole::setLabelStyleSheet( std::string & buf, std::string & sh )
@@ -698,7 +768,6 @@ void TConsole::closeEvent( QCloseEvent *event )
                 XMLexport writer( mpHost );
                 writer.exportHost( & file_xml );
                 file_xml.close();
-                qDebug()<<"rooms.size()="<<mpHost->mpMap->rooms.size();
                 if( mpHost->mpMap->rooms.size() > 0 )
                 {
                     QDir dir_map;
@@ -836,9 +905,11 @@ void TConsole::slot_toggleReplayRecording()
 
 void TConsole::changeColors()
 {
+    mDisplayFont.setFixedPitch(true);
     if( mIsDebugConsole )
     {
         mDisplayFont.setStyleStrategy( (QFont::StyleStrategy)(QFont::NoAntialias | QFont::PreferQuality) );
+        mDisplayFont.setFixedPitch(true);
         console->setFont( mDisplayFont );
         console2->setFont( mDisplayFont );
         QPalette palette;
@@ -851,6 +922,24 @@ void TConsole::changeColors()
     else if( mIsSubConsole )
     {
         mDisplayFont.setStyleStrategy( (QFont::StyleStrategy)(QFont::NoAntialias | QFont::PreferQuality ) );
+#ifdef Q_OS_MAC
+        QPixmap pixmap = QPixmap( 2000, 600 );
+        QPainter p(&pixmap);
+        mDisplayFont.setLetterSpacing( QFont::AbsoluteSpacing, 0 );
+        p.setFont(mDisplayFont);
+        const QRectF r = QRectF(0,0,2000, 600);
+        QRectF r2;
+        const QString t = "123";
+        p.drawText(r,1,t,&r2);
+        int mFontHeight = QFontMetrics( mDisplayFont ).height();
+        int mFontWidth = QFontMetrics( mDisplayFont ).width( QChar('W') );
+        qreal letterSpacing = (qreal)((qreal)mFontWidth-(qreal)(r2.width()/t.size()));
+        console->mLetterSpacing = letterSpacing;
+        console2->mLetterSpacing = letterSpacing;
+        mpHost->mDisplayFont.setLetterSpacing( QFont::AbsoluteSpacing, letterSpacing );
+        mDisplayFont.setLetterSpacing( QFont::AbsoluteSpacing, console->mLetterSpacing );
+#endif
+        mDisplayFont.setFixedPitch(true);
         console->setFont( mDisplayFont );
         console2->setFont( mDisplayFont );
         QPalette palette;
@@ -864,10 +953,37 @@ void TConsole::changeColors()
     }
     else
     {
+        QPalette pal;
+        pal.setColor(QPalette::Text, mpHost->mCommandLineFgColor );//QColor(0,0,192));
+        pal.setColor(QPalette::Highlight,QColor(0,0,192));
+        pal.setColor(QPalette::HighlightedText, QColor(255,255,255));
+        pal.setColor(QPalette::Base,mpHost->mCommandLineBgColor);//QColor(255,255,225));
+        mpCommandLine->setPalette( pal );
+        mpCommandLine->mRegularPalette = pal;
         if( mpHost->mNoAntiAlias )
             mpHost->mDisplayFont.setStyleStrategy( QFont::NoAntialias );
         else
             mpHost->mDisplayFont.setStyleStrategy( (QFont::StyleStrategy)( QFont::PreferAntialias | QFont::PreferQuality ) );
+        mpHost->mDisplayFont.setFixedPitch(true);
+        mDisplayFont.setFixedPitch(true);
+#ifdef Q_OS_MAC
+        QPixmap pixmap = QPixmap( 2000, 600 );
+        QPainter p(&pixmap);
+        QFont _font = mpHost->mDisplayFont;
+        _font.setLetterSpacing(QFont::AbsoluteSpacing, 0);
+        p.setFont(_font);
+        const QRectF r = QRectF(0,0,2000, 600);
+        QRectF r2;
+        const QString t = "123";
+        p.drawText(r,1,t,&r2);
+        int mFontHeight = QFontMetrics( mpHost->mDisplayFont ).height();
+        int mFontWidth = QFontMetrics( mpHost->mDisplayFont ).width( QChar('W') );
+        qreal letterSpacing = (qreal)((qreal)mFontWidth-(qreal)(r2.width()/t.size()));
+        console->mLetterSpacing = letterSpacing;
+        console2->mLetterSpacing = letterSpacing;
+        mpHost->mDisplayFont.setLetterSpacing( QFont::AbsoluteSpacing, letterSpacing );
+        mDisplayFont.setLetterSpacing( QFont::AbsoluteSpacing, console->mLetterSpacing );
+#endif
         console->setFont( mpHost->mDisplayFont );
         console2->setFont( mpHost->mDisplayFont );
         QPalette palette;
@@ -880,6 +996,7 @@ void TConsole::changeColors()
         console2->setPalette( palette );
         mCommandFgColor = mpHost->mCommandFgColor;
         mCommandBgColor = mpHost->mCommandBgColor;
+        mpCommandLine->setFont(mpHost->mDisplayFont);
     }
     QPalette palette;
     palette.setColor( QPalette::Button, QColor(0,0,255) );
@@ -939,7 +1056,6 @@ void TConsole::loadRawFile( std::string n )
 {
     QString directoryLogFile = QDir::homePath()+"/.config/mudlet/profiles/"+profile_name+"/log";
     QString fileName = directoryLogFile + "/"+QString(n.c_str());
-    qDebug()<<QTime::currentTime()<<": starting. Reading first packet from file ...";
     mpHost->mTelnet.loadReplay( fileName );
 }
 
@@ -1268,6 +1384,7 @@ void TConsole::scrollUp( int lines )
     console2->mIsTailMode = true;
     console2->mCursorY = buffer.size();//getLastLineNumber();
     console2->show();
+    console2->updateScreenView();
     console2->forceUpdate();
     console->scrollUp( lines );
 }
@@ -1327,7 +1444,6 @@ void TConsole::reset()
 
 void TConsole::insertLink( QString text, QStringList & func, QStringList & hint, QPoint P, bool customFormat )
 {
-    qDebug()<<"insertLink() text="<<text<<" func="<<func<<" hint="<<hint;
     int x = P.x();
     int y = P.y();
     int o = 0;//FIXME: das ist ein fehler bei mehrzeiliger selection
@@ -2157,7 +2273,6 @@ void TConsole::resetMainConsole()
 
 TConsole * TConsole::createMiniConsole( QString & name, int x, int y, int width, int height )
 {
-    qDebug()<<"createMiniConsole: name="<<name;
     std::string key = name.toLatin1().data();
     if( mSubConsoleMap.find( key ) == mSubConsoleMap.end() )
     {
@@ -2175,6 +2290,8 @@ TConsole * TConsole::createMiniConsole( QString & name, int x, int y, int width,
         pC->mOldY = y;
         pC->setContentsMargins(0,0,0,0);
         pC->move( x, y );
+        std::string _n = name.toStdString();
+        pC->setMiniConsoleFontSize( _n, 12 );
         pC->show();
         return pC;
     }
@@ -2196,12 +2313,10 @@ TLabel * TConsole::createLabel( QString & name, int x, int y, int width, int hei
         pC->setContentsMargins(0,0,0,0);
         pC->move( x, y );
         pC->show();
-   qDebug()<<"created new miniconsole name="<<name;
         return pC;
     }
     else
     {
-        qDebug()<<"ERROR: couldn't create miniconsole name="<<name;
         return 0;
     }
 }
@@ -2287,6 +2402,9 @@ bool TConsole::showWindow( QString & name )
         mSubConsoleMap[key]->console->updateScreenView();
         mSubConsoleMap[key]->console->forceUpdate();
         mSubConsoleMap[key]->show();
+
+        mSubConsoleMap[key]->console2->updateScreenView();
+        mSubConsoleMap[key]->console2->forceUpdate();
         //mSubConsoleMap[key]->move(mSubConsoleMap[key]->mOldX, mSubConsoleMap[key]->mOldY);
         return true;
     }
@@ -2513,8 +2631,86 @@ void TConsole::showStatistics()
     mpHost->mpConsole->raise();
 }
 
+void TConsole::slot_searchBufferUp()
+{
+    QString _txt = mpBufferSearchBox->text();
+    if( _txt != mSearchQuery )
+    {
+        mSearchQuery = _txt;
+        mCurrentSearchResult = buffer.lineBuffer.size();
+    }
+    if( buffer.lineBuffer.size() < 1 ) return;
+    bool _found = false;
+    for( int i=mCurrentSearchResult-1; i >= 0; i-- )
+    {
+        int begin = -1;
+        do
+        {
+            begin = buffer.lineBuffer[i].indexOf(mSearchQuery, begin+1 );
+            if( begin > -1 )
+            {
+                int length = mSearchQuery.size();
+                moveCursor( 0, i );
+                selectSection( begin, length );
+                setBgColor( 255, 255, 0 );
+                setFgColor( 0, 0, 0 );
+                deselect();
+                reset();
+                _found = true;
+            }
+        }
+        while( begin > -1 );
+        if( _found )
+        {
+            scrollUp( buffer.mCursorY-i-3 );
+            console->forceUpdate();
+            mCurrentSearchResult = i;
+            return;
+        }
+    }
+    print("No search results, sorry!\n");
+}
 
-
+void TConsole::slot_searchBufferDown()
+{
+    QString _txt = mpBufferSearchBox->text();
+    if( _txt != mSearchQuery )
+    {
+        mSearchQuery = _txt;
+        mCurrentSearchResult = buffer.lineBuffer.size();
+    }
+    if( buffer.lineBuffer.size() < 1 ) return;
+    if( mCurrentSearchResult >= buffer.lineBuffer.size() ) return;
+    bool _found = false;
+    for( int i=mCurrentSearchResult+1; i < buffer.lineBuffer.size(); i++ )
+    {
+        int begin = -1;
+        do
+        {
+            begin = buffer.lineBuffer[i].indexOf(mSearchQuery, begin+1 );
+            if( begin > -1 )
+            {
+                int length = mSearchQuery.size();
+                moveCursor( 0, i );
+                selectSection( begin, length );
+                setBgColor( 255, 255, 0 );
+                setFgColor( 0, 0, 0 );
+                deselect();
+                reset();
+                _found = true;
+            }
+        }
+        while( begin > -1 );
+        if( _found )
+        {
+            scrollUp( buffer.mCursorY-i-3 );
+            console->forceUpdate();
+            mCurrentSearchResult = i;
+            return;
+        }
+    }
+    print("No search results, sorry!\n");
+}
 
 
 

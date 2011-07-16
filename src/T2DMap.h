@@ -43,6 +43,9 @@ public:
     void     mouseMoveEvent( QMouseEvent * event );
     void     mouseReleaseEvent(QMouseEvent * e );
     int      getTopLeftSelection();
+    void     setRoomSize( double );
+    void     setExitSize( double );
+
     TMap *   mpMap;
     Host *   mpHost;
     int      xzoom;
@@ -61,8 +64,8 @@ public:
     float    mTX;
     float    mTY;
     int      mChosenRoomColor;
-    int      xspan;
-    int      yspan;
+    float    xspan;
+    float    yspan;
     bool     mMultiSelection;
     QRectF   mMultiRect;
     bool     mPopupMenu;
@@ -75,11 +78,44 @@ public:
     QMap<int,QPixmap> mPixMap;
     QMap<int, QPixmap *> mGridPix;
     int      gzoom;
+    double   rSize;
+    double   eSize;
+    int      mRID;
+    int      mAID;
+    int      mOx;
+    int      mOy;
+    int      mOz;
+    bool     mShiftMode;
+    bool     mShowInfo;
+    QComboBox * arealist_combobox;
+    QDialog * mpCustomLinesDialog;
+    int  mCustomLinesRoomFrom;
+    int  mCustomLinesRoomTo;
+    QString mCustomLinesRoomExit;
+    QComboBox * mpCurrentLineStyle;
+    QPushButton * mpCurrentLineColor;
+    QColor mCurrentLineColor;
+    QCheckBox * mpCurrentLineArrow;
+    bool mShowGrid;
+    QPointF mLastMouseClick;
+    bool mBubbleMode;
+    bool mMapperUseAntiAlias;
 
 signals:
 
 public slots:
 
+    void slot_createLabel();
+    void slot_customLineColor();
+    void showInfo();
+    void shiftZup();
+    void shiftZdown();
+    void switchArea(QString);
+    void toggleShiftMode();
+    void shiftUp();
+    void shiftDown();
+    void shiftLeft();
+    void shiftRight();
     void slot_setCharacter();
     void slot_setImage();
     void slot_movePosition();
@@ -95,6 +131,9 @@ public slots:
     void slot_lockRoom();
     void slot_setRoomWeight();
     void slot_setArea();
+    void slot_setCustomLine();
+    void slot_setCustomLine2();
+    void slot_setCustomLine2B(QTreeWidgetItem*, int);
 };
 
 #endif // T2DMAP_H

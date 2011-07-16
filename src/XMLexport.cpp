@@ -118,6 +118,10 @@ bool XMLexport::writeHost( Host * pT )
     writeAttribute( "mMapStrongHighlight", pT->mMapStrongHighlight ? "yes" : "no" );
     writeAttribute( "mLogStatus", pT->mLogStatus ? "yes" : "no" );
     writeAttribute( "mEnableSpellCheck", pT->mEnableSpellCheck ? "yes" : "no" );
+    writeAttribute( "mShowInfo", pT->mShowInfo ? "yes" : "no" );
+    writeAttribute( "mAcceptServerGUI", pT->mAcceptServerGUI ? "yes" : "no" );
+    writeAttribute( "mMapperUseAntiAlias", pT->mMapperUseAntiAlias ? "yes" : "no" );
+    writeAttribute( "mFORCE_MXP_NEGOTIATION_OFF", pT->mFORCE_MXP_NEGOTIATION_OFF ? "yes" : "no" );
 
     writeTextElement( "name", pT->mHostName );
     //writeTextElement( "login", pT->mLogin );
@@ -129,6 +133,8 @@ bool XMLexport::writeHost( Host * pT )
     }
     writeEndElement();
     writeTextElement( "url", pT->mUrl );
+    writeTextElement( "serverPackageName", pT->mServerGUI_Package_name );
+    writeTextElement( "serverPackageVersion", QString::number(pT->mServerGUI_Package_version ) );
     writeTextElement( "port", QString::number(pT->mPort) );
     writeTextElement( "borderTopHeight", QString::number(pT->mBorderTopHeight) );
     writeTextElement( "borderBottomHeight", QString::number(pT->mBorderBottomHeight) );
@@ -141,6 +147,8 @@ bool XMLexport::writeHost( Host * pT )
     writeTextElement( "mBgColor", pT->mBgColor.name() );
     writeTextElement( "mCommandFgColor", pT->mCommandFgColor.name() );
     writeTextElement( "mCommandBgColor", pT->mCommandBgColor.name() );
+    writeTextElement( "mCommandLineFgColor", pT->mCommandLineFgColor.name() );
+    writeTextElement( "mCommandLineBgColor", pT->mCommandLineBgColor.name() );
     writeTextElement( "mBlack", pT->mBlack.name() );
     writeTextElement( "mLightBlack", pT->mLightBlack.name() );
     writeTextElement( "mRed", pT->mRed.name() );
@@ -181,6 +189,8 @@ bool XMLexport::writeHost( Host * pT )
     writeTextElement( "mWhite2", pT->mWhite_2.name() );
     writeTextElement( "mLightWhite2", pT->mLightWhite_2.name() );
     writeTextElement( "mSpellDic", pT->mSpellDic );
+    writeTextElement( "mLineSize", QString::number(pT->mLineSize) );
+    writeTextElement( "mRoomSize", QString::number(pT->mRoomSize) );
     writeEndElement(); // end Host tag
     writeEndElement(); // end HostPackage tag
 
